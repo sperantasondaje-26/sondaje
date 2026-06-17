@@ -1,91 +1,104 @@
- # 1. Instalăm librăriile necesare
-!pip install -q folium pandas requests geopy
+  <!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sondaje Speranța</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-import pandas as pd
-import requests
-import folium
-from geopy.geocoders import Nominatim
-import time
+        .meniu-container {
+            text-align: center;
+            background: #ffffff;
+            padding: 35px 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 400px;
+            width: 90%;
+        }
 
-# Link-ul tău live de Google Sheets (conectat direct)
-LINK_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1O_XyQKzPOYiYGx7RPgJ-s6wl88c-YCmmUDGCf3RkOuQ/edit?usp=sharing"
+        .logo-speranta {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 15px;
+        }
 
-# Transformare automată link pentru export direct CSV în Python
-if "edit?usp=sharing" in LINK_GOOGLE_SHEETS:
-    url_direct = LINK_GOOGLE_SHEETS.replace("edit?usp=sharing", "export?format=csv")
-elif "/edit" in LINK_GOOGLE_SHEETS:
-    url_direct = LINK_GOOGLE_SHEETS.split("/edit")[0] + "/export?format=csv"
-else:
-    url_direct = LINK_GOOGLE_SHEETS
+        h1 {
+            color: #1565c0;
+            font-size: 26px;
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
 
-print("Se descarcă datele live din Google Sheets...")
-df = pd.read_csv(url_direct, sep=None, engine='python')
-df.columns = df.columns.str.strip()
+        p {
+            color: #666666;
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
 
-# Inițializăm harta centrată pe București
-harta = folium.Map(location=[44.4396, 26.0963], zoom_start=13, tiles='OpenStreetMap')
-geolocator = Nominatim(user_agent="survey_routing_bucharest_2026")
+        .buton {
+            display: block;
+            text-decoration: none;
+            color: white;
+            padding: 16px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s, background-color 0.2s;
+        }
 
-# --- CREĂM GRUPURILE PENTRU BUTONUL DE FILTRARE (NEVOI ȘI TRASEE) ---
-grup_trasee = folium.FeatureGroup(name="🔀 Trasee Echipe (Linii Roșii)").add_to(harta)
-grup_interese = folium.FeatureGroup(name="⚠️ Nevoi / Interese în Teren").add_to(harta)
+        .buton:active {
+            transform: scale(0.97);
+        }
 
-def curata_adresa_super_simplu(text_adresa):
-    if pd.isna(text_adresa):
-        return None
-    text = str(text_adresa).strip()
-    text = text.replace(", Bucuresti, Romania", "").replace(", București, România", "")
-    text = text.replace("nr.", "").replace("nr", "")
-    return f"{text}, Bucuresti, Romania"
+        .btn-harta {
+            background-color: #2e7d32;
+        }
+        .btn-harta:hover {
+            background-color: #1b5e20;
+        }
 
-def obtine_traseu_strazi(lat_start, lon_start, lat_final, lon_final):
-    url = f"http://router.project-osrm.org/route/v1/foot/{lon_start},{lat_start};{lon_final},{lat_final}?overview=full&geometries=geojson"
-    try:
-        raspuns = requests.get(url).json()
-        return [[punct[1], punct[0]] for punct in raspuns['routes'][0]['geometry']['coordinates']]
-    except Exception:
-        return [[lat_start, lon_start], [lat_final, lon_final]]
+        .btn-formular {
+            background-color: #0288d1;
+        }
+        .btn-formular:hover {
+            background-color: #01579b;
+        }
+    </style>
+</head>
+<body>
 
-print("Se traduc adresele scrise de echipe și se desenează harta...")
-
-for index, rand in df.iterrows():
-    try:
-        # Verificăm dacă rândul are adrese valide introduse
-        if pd.isna(rand['Adresa_Start_Geocodare']) or pd.isna(rand['Adresa_Final_Geocodare']):
-            continue
-            
-        adr_start = curata_adresa_super_simplu(rand['Adresa_Start_Geocodare'])
-        adr_final = curata_adresa_super_simplu(rand['Adresa_Final_Geocodare'])
+    <div class="meniu-container">
+        <!-- LOGO -->
+        <img src="Untitled-design-3.png" alt="Logo Speranta TV" class="logo-speranta">
         
-        echipa = rand.get('Echipa ta ', f'Ruta {index + 1}')
-        
-        # Extragem ce au scris operatorii la nevoi și rezultate
-        nevoi = rand.get('Descriere nevoi', '')
-        if pd.isna(nevoi) or str(nevoi).strip() == "":
-            nevoi = rand.get('Descriere  nevoi', '') # Acoperă și varianta cu spațiu dublu din Forms
-            
-        rezultate = rand.get('Ce rezultate au fost pe aceasta strada', 'Sondaj efectuat')
+        <!-- TITLU -->
+        <h1>Sondaje Speranța</h1>
+        <p>Selectați opțiunea dorită pentru teren:</p>
 
-        # Traducem textul adreselor în coordonate (Latitudine și Longitudine)
-        loc_start = geolocator.geocode(adr_start, timeout=10)
-        time.sleep(1.2)
-        loc_final = geolocator.geocode(adr_final, timeout=10)
-        time.sleep(1.2)
+        <!-- OPȚIUNEA 1: HARTA -->
+        <a href="Trasee_Sondaje_Bucuresti.html" class="buton btn-harta">
+            🗺️ 1. Vezi Harta Traseelor
+        </a>
 
-        if loc_start and loc_final:
-            lat_s, lon_s = loc_start.latitude, loc_start.longitude
-            lat_f, lon_f = loc_final.latitude, loc_final.longitude
-            
-            puncte_traseu = obtine_traseu_strazi(lat_s, lon_s, lat_f, lon_f)
-            
-            # 1. Adăugăm linia roșie stradală în grupul de trasee
-            folium.PolyLine(
-                locations=puncte_traseu, 
-                color='red', 
-                weight=6, 
-                opacity=1.0, 
-                tooltip=f"Echipa: {echipa}"
-            ).add_to(grup_trasee)
-            
-            # Markerele standard de capăt (Start verde, Final roșu închis)
-            folium.Marker([lat_s, lon_s], popup=f"Start: {adr_start}", icon=folium.Icon(color='green', icon='play')).add_to(grup_trasee)
+        <!-- OPȚIUNEA 2: FORMULAR -->
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA/viewform?usp=sharing" target="_blank" class="buton btn-formular">
+            📝 2. Completează Formularul
+        </a>
+    </div>
+
+</body>
+</html>

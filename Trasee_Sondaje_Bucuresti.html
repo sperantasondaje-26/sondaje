@@ -17,7 +17,7 @@
             <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             <style>
-                #map_1d4f37f45bc7b4d6321dec855607f000 {
+                #map_a1db2fb065ab1c0e6515bec9ffc8c609 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -54,14 +54,31 @@
 <body>
     
     
-            <div class="folium-map" id="map_1d4f37f45bc7b4d6321dec855607f000" ></div>
+<div style="position: fixed; 
+            top: 10px; left: 60px; width: auto; height: auto; 
+            z-index:9999; font-size:14px; font-family: Arial, sans-serif;">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA/viewform?usp=sharing" 
+       target="_blank" 
+       style="text-decoration: none; 
+              background-color: #0066cc; 
+              color: white; 
+              padding: 10px 18px; 
+              font-weight: bold; 
+              border-radius: 20px; 
+              box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+              display: inline-block;">
+       📝 Completează Formularul
+    </a>
+</div>
+    
+            <div class="folium-map" id="map_a1db2fb065ab1c0e6515bec9ffc8c609" ></div>
         
 </body>
 <script>
     
     
-            var map_1d4f37f45bc7b4d6321dec855607f000 = L.map(
-                "map_1d4f37f45bc7b4d6321dec855607f000",
+            var map_a1db2fb065ab1c0e6515bec9ffc8c609 = L.map(
+                "map_a1db2fb065ab1c0e6515bec9ffc8c609",
                 {
                     center: [44.4396, 26.0963],
                     crs: L.CRS.EPSG3857,
@@ -78,7 +95,7 @@
 
         
     
-            var tile_layer_4032bba532ba9cbab25b3db84fff77ec = L.tileLayer(
+            var tile_layer_6ca598143cdfb2a7131486ddbe88c51b = L.tileLayer(
                 "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
   "minZoom": 0,
@@ -95,22 +112,22 @@
             );
         
     
-            tile_layer_4032bba532ba9cbab25b3db84fff77ec.addTo(map_1d4f37f45bc7b4d6321dec855607f000);
+            tile_layer_6ca598143cdfb2a7131486ddbe88c51b.addTo(map_a1db2fb065ab1c0e6515bec9ffc8c609);
         
     
-            var feature_group_def158822460021bb5a6e45be86d0d43 = L.featureGroup(
+            var feature_group_bb367c25683be1be52380f15c23dcb7e = L.featureGroup(
                 {
 }
             );
         
     
-            var poly_line_603def76d54b43a98ffbeefcad9c9f5a = L.polyline(
+            var poly_line_9801a84a8d94c73c56b2a608e28ebe78 = L.polyline(
                 [[44.433728, 26.121628], [44.433818, 26.121968], [44.433928, 26.122371], [44.434118, 26.123006], [44.434179, 26.123178], [44.434516, 26.123824], [44.434737, 26.124245], [44.434786, 26.124339], [44.434873, 26.124506], [44.43518, 26.125146], [44.435222, 26.12525], [44.435253, 26.125398], [44.435263, 26.125451], [44.435363, 26.126084], [44.435405, 26.126726], [44.435466, 26.127935], [44.435528, 26.129222], [44.435536, 26.129667], [44.435554, 26.130312], [44.435581, 26.130742], [44.435718, 26.131215], [44.435937, 26.132028], [44.43608, 26.132577], [44.436272, 26.133501], [44.436284, 26.133582], [44.43629, 26.133675], [44.436297, 26.134278]],
                 {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "red", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 6}
-            ).addTo(feature_group_def158822460021bb5a6e45be86d0d43);
+            ).addTo(feature_group_bb367c25683be1be52380f15c23dcb7e);
         
     
-            poly_line_603def76d54b43a98ffbeefcad9c9f5a.bindTooltip(
+            poly_line_9801a84a8d94c73c56b2a608e28ebe78.bindTooltip(
                 `<div>
                      Echipa: Ruta 1
                  </div>`,
@@ -120,14 +137,14 @@
             );
         
     
-            var marker_d91850dbf0eafa2e5143f409fa19ffc4 = L.marker(
+            var marker_cfada4d8e6506c069790d138290bfc66 = L.marker(
                 [44.4338736, 26.1215524],
                 {
 }
-            ).addTo(feature_group_def158822460021bb5a6e45be86d0d43);
+            ).addTo(feature_group_bb367c25683be1be52380f15c23dcb7e);
         
     
-            var icon_0ecf16f0ea9d050cc2fd0a3e94277078 = L.AwesomeMarkers.icon(
+            var icon_70b3c95a0af52fd964ec46f92d09f97a = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -138,34 +155,34 @@
             );
         
     
-        var popup_88cd943e1a0a68c5bb856406368766b3 = L.popup({
+        var popup_77a5cbb578ed8f565cebebe01137102d = L.popup({
   "maxWidth": "100%",
 });
 
         
             
-                var html_3d23f8319e5d489210fcece155daedac = $(`<div id="html_3d23f8319e5d489210fcece155daedac" style="width: 100.0%; height: 100.0%;">Start: Strada Tepes Voda  1, Bucuresti, Romania</div>`)[0];
-                popup_88cd943e1a0a68c5bb856406368766b3.setContent(html_3d23f8319e5d489210fcece155daedac);
+                var html_68f75b0ae6ae4895d14c9a644b07ce3c = $(`<div id="html_68f75b0ae6ae4895d14c9a644b07ce3c" style="width: 100.0%; height: 100.0%;">Start: Strada Tepes Voda  1, Bucuresti, Romania</div>`)[0];
+                popup_77a5cbb578ed8f565cebebe01137102d.setContent(html_68f75b0ae6ae4895d14c9a644b07ce3c);
             
         
 
-        marker_d91850dbf0eafa2e5143f409fa19ffc4.bindPopup(popup_88cd943e1a0a68c5bb856406368766b3)
+        marker_cfada4d8e6506c069790d138290bfc66.bindPopup(popup_77a5cbb578ed8f565cebebe01137102d)
         ;
 
         
     
     
-                marker_d91850dbf0eafa2e5143f409fa19ffc4.setIcon(icon_0ecf16f0ea9d050cc2fd0a3e94277078);
+                marker_cfada4d8e6506c069790d138290bfc66.setIcon(icon_70b3c95a0af52fd964ec46f92d09f97a);
             
     
-            var marker_e994e18b2f67336fd3f553944857df4f = L.marker(
+            var marker_c80fb54d617565cfe55aa4ebc1d4a23d = L.marker(
                 [44.43635, 26.134277],
                 {
 }
-            ).addTo(feature_group_def158822460021bb5a6e45be86d0d43);
+            ).addTo(feature_group_bb367c25683be1be52380f15c23dcb7e);
         
     
-            var icon_3028d57a9b23f9630b57c64b442fb2a9 = L.AwesomeMarkers.icon(
+            var icon_f2cf8c15264bca983710804dec445ec3 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "darkred",
   "iconColor": "white",
@@ -176,56 +193,56 @@
             );
         
     
-        var popup_d647ff76ae6ec330d66341f889ab65d2 = L.popup({
+        var popup_a661bd675f258ad5fdc5fa9db60adf48 = L.popup({
   "maxWidth": "100%",
 });
 
         
             
-                var html_2574e22dd6685d5c19c1c397e1f95437 = $(`<div id="html_2574e22dd6685d5c19c1c397e1f95437" style="width: 100.0%; height: 100.0%;">Final: Strada Tepes Voda  141, Bucuresti, Romania</div>`)[0];
-                popup_d647ff76ae6ec330d66341f889ab65d2.setContent(html_2574e22dd6685d5c19c1c397e1f95437);
+                var html_1487dd44fcab5d50e7c043797f30b816 = $(`<div id="html_1487dd44fcab5d50e7c043797f30b816" style="width: 100.0%; height: 100.0%;">Final: Strada Tepes Voda  141, Bucuresti, Romania</div>`)[0];
+                popup_a661bd675f258ad5fdc5fa9db60adf48.setContent(html_1487dd44fcab5d50e7c043797f30b816);
             
         
 
-        marker_e994e18b2f67336fd3f553944857df4f.bindPopup(popup_d647ff76ae6ec330d66341f889ab65d2)
+        marker_c80fb54d617565cfe55aa4ebc1d4a23d.bindPopup(popup_a661bd675f258ad5fdc5fa9db60adf48)
         ;
 
         
     
     
-                marker_e994e18b2f67336fd3f553944857df4f.setIcon(icon_3028d57a9b23f9630b57c64b442fb2a9);
+                marker_c80fb54d617565cfe55aa4ebc1d4a23d.setIcon(icon_f2cf8c15264bca983710804dec445ec3);
             
     
-            feature_group_def158822460021bb5a6e45be86d0d43.addTo(map_1d4f37f45bc7b4d6321dec855607f000);
+            feature_group_bb367c25683be1be52380f15c23dcb7e.addTo(map_a1db2fb065ab1c0e6515bec9ffc8c609);
         
     
-            var feature_group_9f1f1d99af4f3d92c980b9bd6b04e329 = L.featureGroup(
+            var feature_group_76eb32cb1fb509598db98cb6ade56f97 = L.featureGroup(
                 {
 }
             );
         
     
-            feature_group_9f1f1d99af4f3d92c980b9bd6b04e329.addTo(map_1d4f37f45bc7b4d6321dec855607f000);
+            feature_group_76eb32cb1fb509598db98cb6ade56f97.addTo(map_a1db2fb065ab1c0e6515bec9ffc8c609);
         
     
-            var layer_control_efdf56a2b428b82e1cdc2d442c891986_layers = {
+            var layer_control_a1f3014b0a5752aa8e3d2e252a296023_layers = {
                 base_layers : {
-                    "openstreetmap" : tile_layer_4032bba532ba9cbab25b3db84fff77ec,
+                    "openstreetmap" : tile_layer_6ca598143cdfb2a7131486ddbe88c51b,
                 },
                 overlays :  {
-                    "\ud83d\udd00 Trasee Echipe (Linii Ro\u0219ii)" : feature_group_def158822460021bb5a6e45be86d0d43,
-                    "\u26a0\ufe0f Nevoi / Interese \u00een Teren" : feature_group_9f1f1d99af4f3d92c980b9bd6b04e329,
+                    "\ud83d\udd00 Trasee Echipe (Linii Ro\u0219ii)" : feature_group_bb367c25683be1be52380f15c23dcb7e,
+                    "\u26a0\ufe0f Nevoi / Interese \u00een Teren" : feature_group_76eb32cb1fb509598db98cb6ade56f97,
                 },
             };
-            let layer_control_efdf56a2b428b82e1cdc2d442c891986 = L.control.layers(
-                layer_control_efdf56a2b428b82e1cdc2d442c891986_layers.base_layers,
-                layer_control_efdf56a2b428b82e1cdc2d442c891986_layers.overlays,
+            let layer_control_a1f3014b0a5752aa8e3d2e252a296023 = L.control.layers(
+                layer_control_a1f3014b0a5752aa8e3d2e252a296023_layers.base_layers,
+                layer_control_a1f3014b0a5752aa8e3d2e252a296023_layers.overlays,
                 {
   "position": "topright",
   "collapsed": false,
   "autoZIndex": true,
 }
-            ).addTo(map_1d4f37f45bc7b4d6321dec855607f000);
+            ).addTo(map_a1db2fb065ab1c0e6515bec9ffc8c609);
 
         
 </script>

@@ -5,21 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trasee Sondaje București</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        html, body {
             margin: 0;
             padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             display: flex;
             flex-direction: column;
-            height: 100vh;
         }
 
-        /* Harta ocupă acum tot ecranul, să se vadă perfect pe telefon */
+        /* Containerul hărții ocupă tot ecranul disponibil */
         .harta-container {
             flex: 1;
             width: 100%;
-            height: 100%;
         }
 
         iframe {
@@ -28,12 +27,13 @@
             border: none;
         }
 
-        /* Bara fixă de jos cu butonul de acțiune */
+        /* Zona de jos cu butonul de acțiune */
         .zona-buton {
-            background: #fff;
+            background: #ffffff;
             padding: 15px;
             text-align: center;
             box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
 
         .buton-formular {
@@ -46,22 +46,19 @@
             border-radius: 30px;
             font-size: 16px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: background 0.2s;
-        }
-
-        .buton-formular:hover {
-            background-color: #004c99;
         }
     </style>
 </head>
 <body>
 
+    <!-- CONTAINER 1: HARTA PE TOT ECRANUL -->
     <div class="harta-container">
         <iframe src="Trasee_Sondaje_Bucuresti.html"></iframe>
     </div>
 
+    <!-- ZONA DE JOS: DOAR BUTONUL CURAT, FĂRĂ ECRAN ALB SAU ERORI -->
     <div class="zona-buton">
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA/viewform?usp=sharing" target="_blank" class="buton-formular">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA/viewform?usp=sf_link" target="_blank" class="buton-formular">
             📝 Deschide Formularul de Completare
         </a>
     </div>

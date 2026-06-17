@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_7784fb4ad69dff74e20a1a0be89a9786 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_7784fb4ad69dff74e20a1a0be89a9786" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_7784fb4ad69dff74e20a1a0be89a9786 = L.map(
+                "map_7784fb4ad69dff74e20a1a0be89a9786",
+                {
+                    center: [44.4396, 26.0963],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 13,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_1c5e0a3118079f6146cba78c31244ff3 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_1c5e0a3118079f6146cba78c31244ff3.addTo(map_7784fb4ad69dff74e20a1a0be89a9786);
+        
+    
+            var feature_group_724960219fd8ed41b6ab53ef50bd8de3 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var poly_line_ef423c176e9a6877778316b9e6821d7c = L.polyline(
+                [[44.433728, 26.121628], [44.433818, 26.121968], [44.433928, 26.122371], [44.434118, 26.123006], [44.434179, 26.123178], [44.434516, 26.123824], [44.434737, 26.124245], [44.434786, 26.124339], [44.434873, 26.124506], [44.43518, 26.125146], [44.435222, 26.12525], [44.435253, 26.125398], [44.435263, 26.125451], [44.435363, 26.126084], [44.435405, 26.126726], [44.435466, 26.127935], [44.435528, 26.129222], [44.435536, 26.129667], [44.435554, 26.130312], [44.435581, 26.130742], [44.435718, 26.131215], [44.435937, 26.132028], [44.43608, 26.132577], [44.436272, 26.133501], [44.436284, 26.133582], [44.43629, 26.133675], [44.436297, 26.134278]],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "red", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_724960219fd8ed41b6ab53ef50bd8de3);
+        
+    
+            poly_line_ef423c176e9a6877778316b9e6821d7c.bindTooltip(
+                `<div>
+                     Echipa: Ruta 1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_33b07920f75b17a0af655c5f0571b3e6 = L.marker(
+                [44.4338736, 26.1215524],
+                {
+}
+            ).addTo(feature_group_724960219fd8ed41b6ab53ef50bd8de3);
+        
+    
+            var icon_377869267ee1985169c9679628139c45 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "play",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_61584a68e2c26e8e1178f3c5e7068e10 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_145a0e35063b070c978d890696cac532 = $(`<div id="html_145a0e35063b070c978d890696cac532" style="width: 100.0%; height: 100.0%;">Start: Strada Tepes Voda  1, Bucuresti, Romania</div>`)[0];
+                popup_61584a68e2c26e8e1178f3c5e7068e10.setContent(html_145a0e35063b070c978d890696cac532);
+            
+        
+
+        marker_33b07920f75b17a0af655c5f0571b3e6.bindPopup(popup_61584a68e2c26e8e1178f3c5e7068e10)
+        ;
+
+        
+    
+    
+                marker_33b07920f75b17a0af655c5f0571b3e6.setIcon(icon_377869267ee1985169c9679628139c45);
+            
+    
+            var marker_134db80da56b3f5c259cfd4f877c084d = L.marker(
+                [44.43635, 26.134277],
+                {
+}
+            ).addTo(feature_group_724960219fd8ed41b6ab53ef50bd8de3);
+        
+    
+            var icon_5d6f44bd85c08230e0c78be76fd1778c = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkred",
+  "iconColor": "white",
+  "icon": "stop",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_89e4f17a990cfacb40fb8d1acc0d787c = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_1272cb60417d1f74d99c3e2065c27de7 = $(`<div id="html_1272cb60417d1f74d99c3e2065c27de7" style="width: 100.0%; height: 100.0%;">Final: Strada Tepes Voda  141, Bucuresti, Romania</div>`)[0];
+                popup_89e4f17a990cfacb40fb8d1acc0d787c.setContent(html_1272cb60417d1f74d99c3e2065c27de7);
+            
+        
+
+        marker_134db80da56b3f5c259cfd4f877c084d.bindPopup(popup_89e4f17a990cfacb40fb8d1acc0d787c)
+        ;
+
+        
+    
+    
+                marker_134db80da56b3f5c259cfd4f877c084d.setIcon(icon_5d6f44bd85c08230e0c78be76fd1778c);
+            
+    
+            feature_group_724960219fd8ed41b6ab53ef50bd8de3.addTo(map_7784fb4ad69dff74e20a1a0be89a9786);
+        
+    
+            var feature_group_bed6bd48ff54112548806f15e5c7b79d = L.featureGroup(
+                {
+}
+            );
+        
+    
+            feature_group_bed6bd48ff54112548806f15e5c7b79d.addTo(map_7784fb4ad69dff74e20a1a0be89a9786);
+        
+    
+            var layer_control_96cfcacc133e74c1318d46170ee944df_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_1c5e0a3118079f6146cba78c31244ff3,
+                },
+                overlays :  {
+                    "\ud83d\udd00 Trasee Echipe (Linii Ro\u0219ii)" : feature_group_724960219fd8ed41b6ab53ef50bd8de3,
+                    "\u26a0\ufe0f Nevoi / Interese \u00een Teren" : feature_group_bed6bd48ff54112548806f15e5c7b79d,
+                },
+            };
+            let layer_control_96cfcacc133e74c1318d46170ee944df = L.control.layers(
+                layer_control_96cfcacc133e74c1318d46170ee944df_layers.base_layers,
+                layer_control_96cfcacc133e74c1318d46170ee944df_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_7784fb4ad69dff74e20a1a0be89a9786);
+
+        
+</script>
+</html>

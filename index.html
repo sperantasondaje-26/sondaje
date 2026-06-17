@@ -1,67 +1,91 @@
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trasee Sondaje București</title>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            display: flex;
-            flex-direction: column;
-        }
+ # 1. Instalăm librăriile necesare
+!pip install -q folium pandas requests geopy
 
-        /* Containerul hărții ocupă tot ecranul disponibil */
-        .harta-container {
-            flex: 1;
-            width: 100%;
-        }
+import pandas as pd
+import requests
+import folium
+from geopy.geocoders import Nominatim
+import time
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+# Link-ul tău live de Google Sheets (conectat direct)
+LINK_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1O_XyQKzPOYiYGx7RPgJ-s6wl88c-YCmmUDGCf3RkOuQ/edit?usp=sharing"
 
-        /* Zona de jos cu butonul de acțiune */
-        .zona-buton {
-            background: #ffffff;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
+# Transformare automată link pentru export direct CSV în Python
+if "edit?usp=sharing" in LINK_GOOGLE_SHEETS:
+    url_direct = LINK_GOOGLE_SHEETS.replace("edit?usp=sharing", "export?format=csv")
+elif "/edit" in LINK_GOOGLE_SHEETS:
+    url_direct = LINK_GOOGLE_SHEETS.split("/edit")[0] + "/export?format=csv"
+else:
+    url_direct = LINK_GOOGLE_SHEETS
 
-        .buton-formular {
-            display: inline-block;
-            background-color: #0066cc;
-            color: white;
-            padding: 14px 35px;
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 30px;
-            font-size: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-    </style>
-</head>
-<body>
+print("Se descarcă datele live din Google Sheets...")
+df = pd.read_csv(url_direct, sep=None, engine='python')
+df.columns = df.columns.str.strip()
 
-    <!-- CONTAINER 1: HARTA PE TOT ECRANUL -->
-    <div class="harta-container">
-        <iframe src="Trasee_Sondaje_Bucuresti.html"></iframe>
-    </div>
+# Inițializăm harta centrată pe București
+harta = folium.Map(location=[44.4396, 26.0963], zoom_start=13, tiles='OpenStreetMap')
+geolocator = Nominatim(user_agent="survey_routing_bucharest_2026")
 
-    <!-- ZONA DE JOS: DOAR BUTONUL CURAT, FĂRĂ ECRAN ALB SAU ERORI -->
-    <div class="zona-buton">
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA/viewform?usp=sf_link" target="_blank" class="buton-formular">
-            📝 Deschide Formularul de Completare
-        </a>
-    </div>
+# --- CREĂM GRUPURILE PENTRU BUTONUL DE FILTRARE (NEVOI ȘI TRASEE) ---
+grup_trasee = folium.FeatureGroup(name="🔀 Trasee Echipe (Linii Roșii)").add_to(harta)
+grup_interese = folium.FeatureGroup(name="⚠️ Nevoi / Interese în Teren").add_to(harta)
 
-</body>
-</html>
+def curata_adresa_super_simplu(text_adresa):
+    if pd.isna(text_adresa):
+        return None
+    text = str(text_adresa).strip()
+    text = text.replace(", Bucuresti, Romania", "").replace(", București, România", "")
+    text = text.replace("nr.", "").replace("nr", "")
+    return f"{text}, Bucuresti, Romania"
+
+def obtine_traseu_strazi(lat_start, lon_start, lat_final, lon_final):
+    url = f"http://router.project-osrm.org/route/v1/foot/{lon_start},{lat_start};{lon_final},{lat_final}?overview=full&geometries=geojson"
+    try:
+        raspuns = requests.get(url).json()
+        return [[punct[1], punct[0]] for punct in raspuns['routes'][0]['geometry']['coordinates']]
+    except Exception:
+        return [[lat_start, lon_start], [lat_final, lon_final]]
+
+print("Se traduc adresele scrise de echipe și se desenează harta...")
+
+for index, rand in df.iterrows():
+    try:
+        # Verificăm dacă rândul are adrese valide introduse
+        if pd.isna(rand['Adresa_Start_Geocodare']) or pd.isna(rand['Adresa_Final_Geocodare']):
+            continue
+            
+        adr_start = curata_adresa_super_simplu(rand['Adresa_Start_Geocodare'])
+        adr_final = curata_adresa_super_simplu(rand['Adresa_Final_Geocodare'])
+        
+        echipa = rand.get('Echipa ta ', f'Ruta {index + 1}')
+        
+        # Extragem ce au scris operatorii la nevoi și rezultate
+        nevoi = rand.get('Descriere nevoi', '')
+        if pd.isna(nevoi) or str(nevoi).strip() == "":
+            nevoi = rand.get('Descriere  nevoi', '') # Acoperă și varianta cu spațiu dublu din Forms
+            
+        rezultate = rand.get('Ce rezultate au fost pe aceasta strada', 'Sondaj efectuat')
+
+        # Traducem textul adreselor în coordonate (Latitudine și Longitudine)
+        loc_start = geolocator.geocode(adr_start, timeout=10)
+        time.sleep(1.2)
+        loc_final = geolocator.geocode(adr_final, timeout=10)
+        time.sleep(1.2)
+
+        if loc_start and loc_final:
+            lat_s, lon_s = loc_start.latitude, loc_start.longitude
+            lat_f, lon_f = loc_final.latitude, loc_final.longitude
+            
+            puncte_traseu = obtine_traseu_strazi(lat_s, lon_s, lat_f, lon_f)
+            
+            # 1. Adăugăm linia roșie stradală în grupul de trasee
+            folium.PolyLine(
+                locations=puncte_traseu, 
+                color='red', 
+                weight=6, 
+                opacity=1.0, 
+                tooltip=f"Echipa: {echipa}"
+            ).add_to(grup_trasee)
+            
+            # Markerele standard de capăt (Start verde, Final roșu închis)
+            folium.Marker([lat_s, lon_s], popup=f"Start: {adr_start}", icon=folium.Icon(color='green', icon='play')).add_to(grup_trasee)

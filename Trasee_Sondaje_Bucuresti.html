@@ -93,30 +93,25 @@
             let randuri = text.split(/\r?\n/);
             if(randuri.length === 0) return linii;
 
-            let antet = randuri[0].split(",").map(h => h.trim().toLowerCase());
+            // Curățăm antetul: scoatem toate spațiile multiple pentru o căutare perfectă
+            let antet = randuri[0].split(",").map(h => h.replace(/\s+/g, ' ').trim().toLowerCase());
             
-            let idxEchipa = antet.findIndex(el => el.includes("echipa ta"));
-            let idxStrada = antet.findIndex(el => el.includes("alege o strada"));
-            
-            let configuratiiCazuri = [
-                { addr: "nr adresa caz 1", nevoi: "descriere nevoi caz 1", obs: "observatii caz 1" },
-                { addr: "nr adresa caz 2", nevoi: "descriere nevoi caz 2", obs: "observatii caz 2" },
-                { addr: "nr adresa caz 3", nevoi: "descriere nevoi caz 3", obs: "observatii caz 3" },
-                { addr: "nr adresa caz 4", nevoi: "descriere nevoi 4",     obs: "observatii caz 4" }
-            ];
+            let idxEchipa = antet.findIndex(el => el.includes("echipa"));
+            let idxStrada = antet.findIndex(el => el.includes("strada"));
 
-            let indiciCazuri = configuratiiCazuri.map(c => {
-                return {
-                    idxAddr: antet.findIndex(el => el.includes(c.addr)),
-                    idxNevoi: antet.findIndex(el => el.includes(c.nevoi)),
-                    idxObs: antet.findIndex(el => el.includes(c.obs))
-                };
-            });
+            // Generăm dinamic indicii pentru toate cele 4 cazuri, fix cum le vedem în imagine
+            let indiciCazuri = [];
+            for (let c = 1; c <= 4; c++) {
+                indiciCazuri.push({
+                    idxAddr: antet.findIndex(el => el.includes("nr") && el.includes("adresa") && el.includes(c.toString())),
+                    idxNevoi: antet.findIndex(el => el.includes("descriere") && el.includes("nevoi") && el.includes(c.toString())),
+                    idxObs: antet.findIndex(el => el.includes("observatii") && el.includes(c.toString()))
+                });
+            }
 
             for (let i = 1; i < randuri.length; i++) {
                 if (!randuri[i].trim()) continue;
                 
-                // Parsare robustă CSV: Păstrează virgulele din interiorul ghilimelelor ca text unic
                 let celule = randuri[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                 
                 let echipa = celule[idxEchipa] || "-";
@@ -124,13 +119,15 @@
 
                 if (!strada || strada.toLowerCase().includes("alege o strada")) continue;
 
-                indiciCazuri.forEach(cazIdx => {
-                    if (cazIdx.idxAddr !== -1 && celule[cazIdx.idxAddr]) {
-                        let numarAdresa = celule[cazIdx.idxAddr].trim();
-                        let textNevoi = cazIdx.idxNevoi !== -1 ? celule[cazIdx.idxNevoi].trim() : "";
-                        let textObs = cazIdx.idxObs !== -1 ? celule[cazIdx.idxObs].trim() : "";
+                // Verificăm fiecare din cele 4 cazuri posibile de pe rândul curent
+                indiciCazuri.forEach(caz => {
+                    if (caz.idxAddr !== -1 && celule[caz.idxAddr]) {
+                        let numarAdresa = celule[caz.idxAddr].trim();
+                        let textNevoi = caz.idxNevoi !== -1 ? celule[caz.idxNevoi].trim() : "";
+                        let textObs = caz.idxObs !== -1 ? celule[caz.idxObs].trim() : "";
 
-                        if (numarAdresa !== "") {
+                        // Dacă adresa este completată, adăugăm cazul în listă
+                        if (numarAdresa !== "" && numarAdresa !== "-") {
                             linii.push({
                                 echipa: echipa,
                                 adresa: strada + ", Nr. " + numarAdresa,

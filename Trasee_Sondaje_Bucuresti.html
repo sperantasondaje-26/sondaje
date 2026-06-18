@@ -90,7 +90,6 @@
 
         function proceseazaCsv(text) {
             let linii = [];
-            // Separăm rândurile ținând cont de terminarea corectă a liniilor din exportul Google
             let randuri = text.split(/\r?\n/);
             if(randuri.length === 0) return linii;
 
@@ -117,7 +116,7 @@
             for (let i = 1; i < randuri.length; i++) {
                 if (!randuri[i].trim()) continue;
                 
-                // Expresie regulată avansată pentru a NU sparge celulele care conțin virgule în interiorul ghilimelelor
+                // Parsare robustă CSV: Păstrează virgulele din interiorul ghilimelelor ca text unic
                 let celule = randuri[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                 
                 let echipa = celule[idxEchipa] || "-";
@@ -128,7 +127,6 @@
                 indiciCazuri.forEach(cazIdx => {
                     if (cazIdx.idxAddr !== -1 && celule[cazIdx.idxAddr]) {
                         let numarAdresa = celule[cazIdx.idxAddr].trim();
-                        // Extragem interesele multiple (care conțin virgule) intacte
                         let textNevoi = cazIdx.idxNevoi !== -1 ? celule[cazIdx.idxNevoi].trim() : "";
                         let textObs = cazIdx.idxObs !== -1 ? celule[cazIdx.idxObs].trim() : "";
 
@@ -151,7 +149,7 @@
             corp.innerHTML = "";
 
             if (cazuri.length === 0) {
-                corp.innerHTML = `<tr><td colspan="4" class="incarcare">Nu s-au găsit cazuri speciale înregistrate în baza de date.</td></tr>`;
+                corp.innerHTML = `<tr><td colspan="4" class="incarcare">Nu s-au găsit cazuri speciale înregistrate.</td></tr>`;
                 return;
             }
 

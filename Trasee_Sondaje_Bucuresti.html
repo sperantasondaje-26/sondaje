@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
@@ -17,10 +17,9 @@
 </head>
 <body>
 
-    <div id="loading" class="loading-pane">🔄 Se încarcă harta instant...</div>
+    <div id="loading" class="loading-pane">🔄 Se încarcă harta live...</div>
     <div id="map"></div>
 
-    <!-- BUTONUL PRETTY FORM CU CĂUTARE CONFIGURAT CORECT -->
     <div style="position: fixed; top: 10px; left: 60px; z-index:9999; font-size:14px; font-family: Arial, sans-serif;">
         <a href="https://prettyform.addxt.com/a/form/vf/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA" 
            target="_blank" 
@@ -33,7 +32,7 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoOoysyhmE8RGtoUdwjHKLayuHxW9er_jJEIhkitCqqu7zCnJQWpncgBHKIYAi-vVzCw/exec?_cb=" + new Date().getTime();
 
-        const map = L.map('map').setView([44.4396, 26.0963], 13);
+        const map = L.map('map').setView([44.4396, 26.0963], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
@@ -41,29 +40,39 @@
         async function incarcatDateLive() {
             try {
                 let res = await fetch(SCRIPT_URL);
-                let rows = await res.json();
+                let elemente = await res.json();
                 
-                for (let rand of rows) {
-                    if (rand.lat_start && rand.lat_final) {
-                        let coordStart = [rand.lat_start, rand.lon_start];
-                        let coordFinal = [rand.lat_final, rand.lon_final];
+                for (let elem of elemente) {
+                    // Dacă elementul este traseul/linia străzii mari
+                    if (elem.tip === "traseu" && elem.lat_start && elem.lat_final) {
+                        let coordStart = [elem.lat_start, elem.lon_start];
+                        let coordFinal = [elem.lat_final, elem.lon_final];
 
-                        // Linie traseu echipe
-                        L.polyline([coordStart, coordFinal], {color: 'red', weight: 5}).addTo(map).bindTooltip(`Echipa: ${rand.echipa}`);
+                        L.polyline([coordStart, coordFinal], {color: 'red', weight: 5}).addTo(map)
+                         .bindTooltip(`Echipa: ${elem.echipa}`);
                         
-                        // Puncte Start și Final
-                        L.marker(coordStart).addTo(map).bindPopup(`<b>Start:</b> ${rand.start}`);
-                        L.marker(coordFinal).addTo(map).bindPopup(`<b>Final:</b> ${rand.final}`);
-
-                        // Bulină portocalie pentru nevoi speciale
-                        if (rand.nevoi && rand.nevoi.toString().trim() !== "") {
-                            L.circleMarker(coordStart, {color: 'orange', radius: 10, fillOpacity: 0.8}).addTo(map)
-                             .bindPopup(`<b>Echipa:</b> ${rand.echipa}<br><b>Nevoi:</b> ${rand.nevoi}<br><b>Rezultat:</b> ${rand.rezultat}`);
-                        }
+                        L.marker(coordStart).addTo(map).bindPopup(`<b>Punct Plecare:</b> ${elem.start}`);
+                        L.marker(coordFinal).addTo(map).bindPopup(`<b>Punct Final:</b> ${elem.final}`);
+                    }
+                    
+                    // Dacă elementul este o adresă specifică cu interes/nevoi din cele 5 opțiuni
+                    if (elem.tip === "punct_interes" && elem.lat) {
+                        L.circleMarker([elem.lat, elem.lon], {
+                            color: 'orange',
+                            fillColor: '#ff9900',
+                            fillOpacity: 0.9,
+                            radius: 10
+                        }).addTo(map).bindPopup(`
+                            <b>📍 Caz Interes Semnalat</b><br>
+                            <b>Echipa:</b> ${elem.echipa}<br>
+                            <b>Adresă:</b> ${elem.adresa}<br>
+                            <b>Nevoi/Note:</b> ${elem.nevoi}<br>
+                            <b>Rezultat Străzi:</b> ${elem.rezultat}
+                        `);
                     }
                 }
             } catch (err) {
-                console.error("Eroare:", err);
+                console.error("Eroare la randare:", err);
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
@@ -72,4 +81,4 @@
         incarcatDateLive();
     </script>
 </body>
-</html>
+</html>  

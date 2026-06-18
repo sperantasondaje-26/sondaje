@@ -21,7 +21,7 @@
     <div id="map"></div>
 
     <div style="position: fixed; top: 10px; left: 60px; z-index:9999; font-size:14px; font-family: Arial, sans-serif;">
-        <a href="https://prettyform.addxt.com/a/form/vf/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA" 
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA/viewform" 
            target="_blank" 
            style="text-decoration: none; background-color: #0066cc; color: white; padding: 10px 18px; font-weight: bold; border-radius: 20px; box-shadow: 0px 4px 6px rgba(0,0,0,0.3); display: inline-block;">
            📝 Completează Formularul
@@ -43,7 +43,7 @@
                 let elemente = await res.json();
                 
                 for (let elem of elemente) {
-                    // Dacă elementul este traseul/linia străzii mari
+                    // 1. Desenează liniile roșii ale străzilor (Trasee)
                     if (elem.tip === "traseu" && elem.lat_start && elem.lat_final) {
                         let coordStart = [elem.lat_start, elem.lon_start];
                         let coordFinal = [elem.lat_final, elem.lon_final];
@@ -55,7 +55,7 @@
                         L.marker(coordFinal).addTo(map).bindPopup(`<b>Punct Final:</b> ${elem.final}`);
                     }
                     
-                    // Dacă elementul este o adresă specifică cu interes/nevoi din cele 5 opțiuni
+                    // 2. Desenează bulinele portocalii pentru cazuri (Puncte de interes)
                     if (elem.tip === "punct_interes" && elem.lat) {
                         L.circleMarker([elem.lat, elem.lon], {
                             color: 'orange',
@@ -67,7 +67,7 @@
                             <b>Echipa:</b> ${elem.echipa}<br>
                             <b>Adresă:</b> ${elem.adresa}<br>
                             <b>Nevoi/Note:</b> ${elem.nevoi}<br>
-                            <b>Rezultat Străzi:</b> ${elem.rezultat}
+                            <b>Rezultat:</b> ${elem.rezultat}
                         `);
                     }
                 }

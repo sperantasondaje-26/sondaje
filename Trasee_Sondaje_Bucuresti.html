@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
@@ -116,15 +116,16 @@
     <!-- Harta de fundal -->
     <div id="map"></div>
 
-    <!-- Scripturi Leaflet - REPARAT AICI (src în loc de href) -->
+    <!-- Scripturi Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // Link-ul tău cel nou din Apps Script care deblochează baza de date
         const urlWebApp = 'https://script.google.com/macros/s/AKfycbxqyEuhn1IRuwj-fqFVb3tn4NMpVBoOTVygl3qqyAT6N0KXlQLTKa6JVYf_BSlJ1ZI2yw/exec';
 
         let dateSalvate = [];
         let harta;
 
-        // Inițializare Hartă Standard pe București
+        // Inițializare Hartă pe București
         document.addEventListener("DOMContentLoaded", function() {
             harta = L.map('map').setView([44.4396, 26.0963], 12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -170,6 +171,7 @@
             cazuri.forEach(caz => {
                 let rând = document.createElement('tr');
                 
+                // Extragere Nevoi și Observații din formatul combinat în Sheets
                 let parti = caz.nevoi.split(" | Obs: ");
                 let nevoiText = parti[0] || "";
                 let observatiiText = parti[1] || "-";
@@ -190,7 +192,7 @@
                 if (el.tip === "traseu" && el.lat_start && el.lon_start && el.lat_final && el.lon_final) {
                     L.polyline([[el.lat_start, el.lon_start], [el.lat_final, el.lon_final]], {
                         color: 'red', weight: 4, opacity: 0.8
-                    }).addTo(harta).bindPopup(`<b>Echipă:</b> ${el.echipa}<br><b>Traseu activat</b>`);
+                    }).addTo(harta);
                 } 
                 else if (el.tip === "punct_interes" && el.lat && el.lon) {
                     L.circleMarker([el.lat, el.lon], {

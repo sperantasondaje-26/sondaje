@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
@@ -20,7 +20,7 @@
     <div id="loading" class="loading-pane">🔄 Se încarcă rutele live din Google Sheets...</div>
     <div id="map"></div>
 
-    <!-- BUTONUL DIN HARTĂ - ACUM CORECTAT PENTRU PRETTY FORMS -->
+    <!-- BUTONUL DIN HARTĂ - CONFIGURAT ACUM CU LINK-UL TĂU PRETTY FORM -->
     <div style="position: fixed; top: 10px; left: 60px; z-index:9999; font-size:14px; font-family: Arial, sans-serif;">
         <a href="https://prettyform.addxt.com/a/form/vf/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA" 
            target="_blank" 
@@ -31,7 +31,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Link-ul tău live din Google Sheets Apps Script cu bypass cache
+        // Link-ul tău live din Google Sheets Apps Script cu bypass cache automat
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoOoysyhmE8RGtoUdwjHKLayuHxW9er_jJEIhkitCqqu7zCnJQWpncgBHKIYAi-vVzCw/exec?_cb=" + new Date().getTime();
 
         const map = L.map('map').setView([44.4396, 26.0963], 13);
@@ -69,10 +69,14 @@
                         let coordFinal = await geocode(finalAddr);
 
                         if (coordStart && coordFinal) {
-                            L.polyline([coordStart, coordFinal], {color: 'red', weight: 5}).addTo(map).bindTooltip(`Echipa: {echipa}`);
+                            // Desenăm linia roșie stradală
+                            L.polyline([coordStart, coordFinal], {color: 'red', weight: 5}).addTo(map).bindTooltip(`Echipa: ${echipa}`);
+                            
+                            // Markere Start/Final
                             L.marker(coordStart).addTo(map).bindPopup(`<b>Start:</b> ${startAddr}`);
                             L.marker(coordFinal).addTo(map).bindPopup(`<b>Final:</b> ${finalAddr}`);
 
+                            // Dacă există interese sau nevoi semnalate
                             if (nevoi.toString().trim() !== "") {
                                 L.circleMarker(coordStart, {color: 'orange', radius: 10, fillOpacity: 0.8}).addTo(map)
                                  .bindPopup(`<b>Echipa:</b> ${echipa}<br><b>Nevoi:</b> ${nevoi}<br><b>Rezultat:</b> ${rezultate}`);
@@ -81,7 +85,7 @@
                     }
                 }
             } catch (err) {
-                console.error("Eroare:", err);
+                console.error("Eroare la procesare:", err);
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }

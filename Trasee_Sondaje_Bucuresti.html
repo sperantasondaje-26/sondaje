@@ -2,143 +2,211 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harta Live Sondaje București</title>
+    <meta name="viewport" content="width=device-width, initial-scale=device-width, initial-scale=1.0">
+    <title>Harta Trasee București</title>
+    <!-- Stiluri Leaflet pentru Hartă -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        html, body, #map { height: 100%; margin: 0; padding: 0; }
-        .loading-pane {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9); z-index: 10000;
-            display: flex; justify-content: center; align-items: center;
-            font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; color: #333;
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100vw; z-index: 1; }
+        
+        /* Butonul Verde - Centralizat Sus */
+        #btn-toggle-tabel {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background-color: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
         }
-        /* Stilul ferestrei pop-up cu lista de cazuri */
-        .modal-lista {
-            display: none; position: fixed; top: 60px; left: 10px; right: 10px; bottom: 10px;
-            background: white; z-index: 10005; border-radius: 12px; box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
-            padding: 15px; font-family: Arial, sans-serif; overflow-y: auto;
+        #btn-toggle-tabel:active { transform: translateX(-50%) scale(0.97); }
+
+        /* Panoul cu Tabelul de Cazuri */
+        #container-tabel {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: white;
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            box-sizing: border-box;
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .modal-title { font-size: 18px; font-weight: bold; color: #333; }
-        .close-btn { background: #cc0000; color: white; border: none; padding: 6px 12px; font-weight: bold; border-radius: 5px; cursor: pointer; }
-        .tabel-cazuri { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        .tabel-cazuri th, .tabel-cazuri td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .tabel-cazuri th { background-color: #f2f2f2; font-weight: bold; }
-        .tabel-cazuri tr:nth-child(even) { background-color: #f9f9f9; }
+        .antet-tabel {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .antet-tabel h2 { margin: 0; font-size: 18px; color: #333; }
+        .btn-inchide {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .zona-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th { background-color: #343a40; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        
+        .incarcare { text-align: center; padding: 30px; font-style: italic; color: #666; }
     </style>
 </head>
 <body>
 
-    <div id="loading" class="loading-pane">🔄 Se încarcă harta live...</div>
+    <!-- Butonul de acces la tabel -->
+    <button id="btn-toggle-tabel" onclick="deschideTabelul()">📋 Vezi Listă Cazuri</button>
+
+    <!-- Structura tabelului ascuns -->
+    <div id="container-tabel">
+        <div class="antet-tabel">
+            <h2>📋 Cazuri Speciale Semnalate pe Teren</h2>
+            <button class="btn-inchide" onclick="inchideTabelul()">✖ Închide</button>
+        </div>
+        <div class="zona-scroll">
+            <table id="tabel-date">
+                <thead>
+                    <tr>
+                        <th>Echipă</th>
+                        <th>Adresă Caz</th>
+                        <th>Interese / Nevoi</th>
+                        <th>Observații Specifice</th>
+                    </tr>
+                </thead>
+                <tbody id="corp-tabel">
+                    <tr>
+                        <td colspan="4" class="incarcare">Se încarcă datele din Google Sheets...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Harta de fundal -->
     <div id="map"></div>
 
-    <!-- ZONA DE BUTOANE SUS (Meniu) -->
-    <div style="position: fixed; top: 10px; left: 60px; z-index:9999; font-family: Arial, sans-serif; display: flex; gap: 10px;">
-        <!-- Butonul 1: Formular -->
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA/viewform" 
-           target="_blank" 
-           style="text-decoration: none; background-color: #0066cc; color: white; padding: 10px 15px; font-weight: bold; border-radius: 20px; box-shadow: 0px 4px 6px rgba(0,0,0,0.3); display: inline-block; font-size: 13px;">
-           📝 Completează Formularul
-        </a>
-        
-        <!-- Butonul 2: Deschide Lista de Cazuri -->
-        <button onclick="deschideLista()" 
-                style="background-color: #2db34a; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 20px; box-shadow: 0px 4px 6px rgba(0,0,0,0.3); cursor: pointer; font-size: 13px;">
-           📋 Vezi Listă Cazuri
-        </button>
-    </div>
-
-    <!-- FEREASTRA ASCUNSĂ CU LISTA DE CAZURI -->
-    <div id="fereastraLista" class="modal-lista">
-        <div class="modal-header">
-            <div class="modal-title">📋 Evidență Cazuri Speciale Semnalate</div>
-            <button class="close-btn" onclick="inchideLista()">Închide ✖</button>
-        </div>
-        <table class="tabel-cazuri">
-            <thead>
-                <tr>
-                    <th>Echipă</th>
-                    <th>Adresă Caz</th>
-                    <th>Interese / Nevoi</th>
-                    <th>Observații Specifice</th>
-                </tr>
-            </thead>
-            <tbody id="corpTabelCazuri">
-                <!-- Rândurile se generează automat aici -->
-            </tbody>
-        </table>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Scripturi Leaflet și Logica de conectare -->
+    <script href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Link-ul tău web deblocat și funcțional
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqyEuhn1IRuwj-fqFVb3tn4NMpVBoOTVygl3qqyAT6N0KXlQLTKa6JVYf_BSlJ1ZI2yw/exec?_cb=" + new Date().getTime();
+        // Legătura cu Apps Script-ul tău cel nou, complet și curățat
+        const urlWebApp = 'https://script.google.com/macros/s/AKfycbxqyEuhn1IRuwj-fqFVb3tn4NMpVBoOTVygl3qqyAT6N0KXlQLTKa6JVYf_BSlJ1ZI2yw/exec';
 
-        const map = L.map('map').setView([44.4396, 26.0963], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        let dateSalvate = [];
+        let harta;
 
-        function deschideLista() { document.getElementById('fereastraLista').style.display = 'block'; }
-        function inchideLista() { document.getElementById('fereastraLista').style.display = 'none'; }
+        // Inițializare Hartă Standard pe București
+        document.addEventListener("DOMContentLoaded", function() {
+            harta = L.map('map').setView([44.4396, 26.0963], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(harta);
+            
+            incarcaDateleSistemului();
+        });
 
-        async function incarcatDateLive() {
-            try {
-                let res = await fetch(SCRIPT_URL);
-                let elemente = await res.json();
-                let tabelHtml = "";
-                
-                for (let elem of elemente) {
-                    // 1. Desenează traseele pe hartă (Linii roșii)
-                    if (elem.tip === "traseu" && elem.lat_start && elem.lat_final) {
-                        let coordStart = [elem.lat_start, elem.lon_start];
-                        let coordFinal = [elem.lat_final, elem.lon_final];
-
-                        L.polyline([coordStart, coordFinal], {color: 'red', weight: 5}).addTo(map)
-                         .bindTooltip(`Echipa: ${elem.echipa}`);
-                        
-                        L.marker(coordStart).addTo(map).bindPopup(`<b>Punct Plecare:</b> ${elem.start}`);
-                        L.marker(coordFinal).addTo(map).bindPopup(`<b>Punct Final:</b> ${elem.final}`);
-                    }
-                    
-                    // 2. Pune punctele portocalii pe hartă și adaugă rândul în tabel
-                    if (elem.tip === "punct_interes") {
-                        if (elem.lat) {
-                            L.circleMarker([elem.lat, elem.lon], {
-                                color: 'orange', fillColor: '#ff9900', fillOpacity: 0.9, radius: 10
-                            }).addTo(map).bindPopup(`
-                                <b>📍 Caz Interes Semnalat</b><br>
-                                <b>Echipa:</b> ${elem.echipa}<br>
-                                <b>Adresă:</b> ${elem.adresa}<br>
-                                <b>Detalii:</b> ${elem.nevoi}
-                            `);
-                        }
-
-                        // Separăm textul de interese de cel de observații pentru o afișare curată în tabel
-                        let parti = elem.nevoi.split(" | Obs: ");
-                        let interese = parti[0] || "Interes semnalat";
-                        let observatii = parti[1] || "Fără observații";
-
-                        tabelHtml += `<tr>
-                            <td><b>${elem.echipa}</b></td>
-                            <td>${elem.adresa}</td>
-                            <td>${interese}</td>
-                            <td><span style="color: #0066cc; font-weight: 500;">${observatii}</span></td>
-                        </tr>`;
-                    }
-                }
-                
-                document.getElementById('corpTabelCazuri').innerHTML = tabelHtml || "<tr><td colspan='4' style='text-align:center;'>Nu s-au găsit cazuri speciale înregistrate.</td></tr>";
-
-            } catch (err) {
-                console.error("Eroare la randare:", err);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
+        function deschideTabelul() {
+            document.getElementById('container-tabel').style.display = 'flex';
         }
 
-        incarcatDateLive();
+        function inchideTabelul() {
+            document.getElementById('container-tabel').style.display = 'none';
+        }
+
+        // Descarcă datele din scriptul Google
+        function incarcaDateleSistemului() {
+            fetch(urlWebApp)
+                .then(response => response.json())
+                .then(data => {
+                    dateSalvate = data;
+                    popeazaTabelCazuri(data);
+                    deseneazaHartaElemente(data);
+                })
+                .catch(err => {
+                    console.error("Eroare incarcare:", err);
+                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare la conectarea cu Google Sheets. Reîncărcați pagina.</td></tr>`;
+                });
+        }
+
+        // Construiește rândurile în mod automat sub formă de tabel curat
+        function popeazaTabelCazuri(elemente) {
+            const corp = document.getElementById('corp-tabel');
+            corp.innerHTML = ""; // Ștergem mesajul de încărcare
+
+            // Filtrăm doar punctele de interes care reprezintă cazurile completate
+            const cazuri = elemente.filter(el => el.tip === "punct_interes");
+
+            if (cazuri.length === 0) {
+                corp.innerHTML = `<tr><td colspan="4" class="incarcare">Nu s-au găsit cazuri speciale înregistrate în baza de date.</td></tr>`;
+                return;
+            }
+
+            cazuri.forEach(caz => {
+                let rând = document.createElement('tr');
+                
+                // Procesăm textul pentru a separa Nevoile de Observații din separatorul „| Obs:”
+                let parti = caz.nevoi.split(" | Obs: ");
+                let nevoiText = parti[0] || "";
+                let observatiiText = parti[1] || "-";
+
+                // Curățăm adresa de textul final de geocodare pentru aspect vizual frumos
+                let adresaAfisata = caz.adresa.replace(", bucuresti, romania", "").replace(", Bucuresti, Romania", "");
+
+                rând.innerHTML = `
+                    <td style="font-weight:bold; color:#0056b3;">${caz.echipa}</td>
+                    <td>${adresaAfisata}</td>
+                    <td>${nevoiText}</td>
+                    <td style="background-color: #fffdf0; font-style: italic;">${observatiiText}</td>
+                `;
+                corp.appendChild(rând);
+            });
+        }
+
+        // Desenează punctele și liniile pe hartă în funcție de geocodare
+        function deseneazaHartaElemente(elemente) {
+            elemente.forEach(el => {
+                if (el.tip === "traseu" && el.lat_start && el.lon_start && el.lat_final && el.lon_final) {
+                    L.polyline([[el.lat_start, el.lon_start], [el.lat_final, el.lon_final]], {
+                        color: 'red', weight: 4, opacity: 0.8
+                    }).addTo(harta).bindPopup(`<b>Echipă:</b> ${el.echipa}<br><b>Traseu activat</b>`);
+                } 
+                else if (el.tip === "punct_interes" && el.lat && el.lon) {
+                    L.circleMarker([el.lat, el.lon], {
+                        radius: 8, fillColor: 'blue', color: '#000', weight: 1, fillOpacity: 0.8
+                    }).addTo(harta).bindPopup(`<b>Echipă:</b> ${el.echipa}<br><b>Adresă:</b> ${el.adresa}`);
+                }
+            });
+        }
     </script>
 </body>
 </html>

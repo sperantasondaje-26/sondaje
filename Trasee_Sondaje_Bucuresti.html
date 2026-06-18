@@ -4,91 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Harta Trasee București</title>
-    <!-- Stiluri Leaflet pentru Hartă -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
         #map { height: 100vh; width: 100vw; z-index: 1; }
-        
-        /* Butonul Verde - Centralizat Sus */
         #btn-toggle-tabel {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background-color: #28a745;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 1000;
+            background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 25px;
+            font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex; align-items: center; gap: 8px;
         }
-        #btn-toggle-tabel:active { transform: translateX(-50%) scale(0.97); }
-
-        /* Panoul cu Tabelul de Cazuri */
         #container-tabel {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: white;
-            z-index: 999;
-            display: none;
-            flex-direction: column;
-            box-sizing: border-box;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: white; z-index: 999; display: none; flex-direction: column; box-sizing: border-box;
         }
-        .antet-tabel {
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .antet-tabel { padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; display: flex; justify-content: space-between; align-items: center; }
         .antet-tabel h2 { margin: 0; font-size: 18px; color: #333; }
-        .btn-inchide {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .zona-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-        th, td {
-            border: 1px solid #dee2e6;
-            padding: 12px 10px;
-            text-align: left;
-            vertical-align: top;
-        }
+        .btn-inchide { background-color: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .zona-scroll { flex: 1; overflow-y: auto; padding: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { border: 1px solid #dee2e6; padding: 12px 10px; text-align: left; vertical-align: top; }
         th { background-color: #343a40; color: white; position: sticky; top: 0; }
         tr:nth-child(even) { background-color: #f2f2f2; }
-        
         .incarcare { text-align: center; padding: 30px; font-style: italic; color: #666; }
     </style>
 </head>
 <body>
 
-    <!-- Butonul de acces la tabel -->
     <button id="btn-toggle-tabel" onclick="deschideTabelul()">📋 Vezi Listă Cazuri</button>
 
-    <!-- Structura tabelului ascuns -->
     <div id="container-tabel">
         <div class="antet-tabel">
             <h2>📋 Cazuri Speciale Semnalate pe Teren</h2>
@@ -106,62 +50,110 @@
                 </thead>
                 <tbody id="corp-tabel">
                     <tr>
-                        <td colspan="4" class="incarcare">Se încarcă datele din Google Sheets...</td>
+                        <td colspan="4" class="incarcare">Se încarcă datele direct din Google Sheets...</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Harta de fundal -->
     <div id="map"></div>
 
-    <!-- Scripturi Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Link-ul tău cel nou din Apps Script care deblochează baza de date
-        const urlWebApp = 'https://script.google.com/macros/s/AKfycbxqyEuhn1IRuwj-fqFVb3tn4NMpVBoOTVygl3qqyAT6N0KXlQLTKa6JVYf_BSlJ1ZI2yw/exec';
+        // ID-ul bazei tale de date configurat corect
+        const idTabelGoogle = '1O_XyQKzPOYiYGx7RPgJ-s6wl88c-YCmmUDGCf3RkOuQ'; 
+        const urlCsv = `https://docs.google.com/spreadsheets/d/${idTabelGoogle}/export?format=csv&gid=206187394`;
 
-        let dateSalvate = [];
         let harta;
 
-        // Inițializare Hartă pe București
         document.addEventListener("DOMContentLoaded", function() {
             harta = L.map('map').setView([44.4396, 26.0963], 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap'
-            }).addTo(harta);
-            
-            incarcaDateleSistemului();
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harta);
+            incarcaDateDirect();
         });
 
-        function deschideTabelul() {
-            document.getElementById('container-tabel').style.display = 'flex';
-        }
+        function deschideTabelul() { document.getElementById('container-tabel').style.display = 'flex'; }
+        function inchideTabelul() { document.getElementById('container-tabel').style.display = 'none'; }
 
-        function inchideTabelul() {
-            document.getElementById('container-tabel').style.display = 'none';
-        }
-
-        function incarcaDateleSistemului() {
-            fetch(urlWebApp)
-                .then(response => response.json())
-                .then(data => {
-                    dateSalvate = data;
-                    popeazaTabelCazuri(data);
-                    deseneazaHartaElemente(data);
+        function incarcaDateDirect() {
+            fetch(urlCsv)
+                .then(response => response.text())
+                .then(text => {
+                    let linii = proceseazaCsv(text);
+                    popeazaTabelDinCsv(linii);
                 })
                 .catch(err => {
-                    console.error("Eroare incarcare:", err);
-                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare la conectarea cu Google Sheets. Reîncărcați pagina.</td></tr>`;
+                    console.error(err);
+                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare de conexiune. Asigurați-vă că fișierul Sheets este setat pe "Oricine are linkul poate vizualiza".</td></tr>`;
                 });
         }
 
-        function popeazaTabelCazuri(elemente) {
-            const corp = document.getElementById('corp-tabel');
-            corp.innerHTML = ""; 
+        // Citire inteligentă rând cu rând din textul curat din Google Sheets
+        function proceseazaCsv(text) {
+            let linii = [];
+            let randuri = text.split("\n");
+            if(randuri.length === 0) return linii;
 
-            const cazuri = elemente.filter(el => el.tip === "punct_interes");
+            // Spargem antetul pentru identificare poziții coloane
+            let antet = randuri[0].split(",").map(h => h.trim().toLowerCase());
+            
+            // Căutăm pozițiile de citire bazate pe titlurile trimise de tine
+            let idxEchipa = randuri[0].toLowerCase().split(",").findIndex(el => el.includes("echipa ta"));
+            let idxStrada = randuri[0].toLowerCase().split(",").findIndex(el => el.includes("alege o strada"));
+            
+            // Seturi dinamice pentru cazurile active (Caz 1, Caz 2, Caz 3, Caz 4)
+            let configuratiiCazuri = [
+                { addr: "nr adresa caz 1", nevoi: "descriere nevoi caz 1", obs: "observatii caz 1" },
+                { addr: "nr adresa caz 2", nevoi: "descriere nevoi caz 2", obs: "observatii caz 2" },
+                { addr: "nr adresa caz 3", nevoi: "descriere nevoi caz 3", obs: "observatii caz 3" },
+                { addr: "nr adresa caz 4", nevoi: "descriere nevoi 4", obs: "observatii caz 4" }
+            ];
+
+            let indiciCazuri = configuratiiCazuri.map(c => {
+                return {
+                    idxAddr: randuri[0].toLowerCase().split(",").findIndex(el => el.includes(c.addr)),
+                    idxNevoi: randuri[0].toLowerCase().split(",").findIndex(el => el.includes(c.nevoi)),
+                    idxObs: randuri[0].toLowerCase().split(",").findIndex(el => el.includes(c.obs))
+                };
+            });
+
+            // Parcurgem fiecare rând trimis de formulare
+            for (let i = 1; i < randuri.length; i++) {
+                if (!randuri[i].trim()) continue;
+                
+                // Spargem celulele (ținem cont de virgule elementare)
+                let celule = randuri[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+                
+                let echipa = celule[idxEchipa] || "Echipă";
+                let strada = celule[idxStrada] || "";
+
+                if (!strada || strada.toLowerCase().includes("alege o strada")) continue;
+
+                // Verificăm cele 4 cazuri posibile din rândul curent
+                indiciCazuri.forEach(cazIdx => {
+                    if (cazIdx.idxAddr !== -1 && celule[cazIdx.idxAddr]) {
+                        let numarAdresa = celule[cazIdx.idxAddr];
+                        let textNevoi = cazIdx.idxNevoi !== -1 ? celule[cazIdx.idxNevoi] : "";
+                        let textObs = cazIdx.idxObs !== -1 ? celule[cazIdx.idxObs] : "";
+
+                        if (numarAdresa && numarAdresa.trim() !== "") {
+                            linii.push({
+                                echipa: echipa,
+                                adresa: strada + ", Nr. " + numarAdresa,
+                                nevoi: textNevoi || "Interes semnalat",
+                                observatii: textObs || "-"
+                            });
+                        }
+                    }
+                });
+            }
+            return linii;
+        }
+
+        function popeazaTabelDinCsv(cazuri) {
+            const corp = document.getElementById('corp-tabel');
+            corp.innerHTML = "";
 
             if (cazuri.length === 0) {
                 corp.innerHTML = `<tr><td colspan="4" class="incarcare">Nu s-au găsit cazuri speciale înregistrate în baza de date.</td></tr>`;
@@ -169,36 +161,14 @@
             }
 
             cazuri.forEach(caz => {
-                let rând = document.createElement('tr');
-                
-                // Extragere Nevoi și Observații din formatul combinat în Sheets
-                let parti = caz.nevoi.split(" | Obs: ");
-                let nevoiText = parti[0] || "";
-                let observatiiText = parti[1] || "-";
-                let adresaAfisata = caz.adresa.replace(", bucuresti, romania", "").replace(", Bucuresti, Romania", "");
-
-                rând.innerHTML = `
+                let rand = document.createElement('tr');
+                rand.innerHTML = `
                     <td style="font-weight:bold; color:#0056b3;">${caz.echipa}</td>
-                    <td>${adresaAfisata}</td>
-                    <td>${nevoiText}</td>
-                    <td style="background-color: #fffdf0; font-style: italic;">${observatiiText}</td>
+                    <td>${caz.adresa}</td>
+                    <td>${caz.nevoi}</td>
+                    <td style="background-color: #fffdf0; font-style: italic;">${caz.observatii}</td>
                 `;
-                corp.appendChild(rând);
-            });
-        }
-
-        function deseneazaHartaElemente(elemente) {
-            elemente.forEach(el => {
-                if (el.tip === "traseu" && el.lat_start && el.lon_start && el.lat_final && el.lon_final) {
-                    L.polyline([[el.lat_start, el.lon_start], [el.lat_final, el.lon_final]], {
-                        color: 'red', weight: 4, opacity: 0.8
-                    }).addTo(harta);
-                } 
-                else if (el.tip === "punct_interes" && el.lat && el.lon) {
-                    L.circleMarker([el.lat, el.lon], {
-                        radius: 8, fillColor: 'blue', color: '#000', weight: 1, fillOpacity: 0.8
-                    }).addTo(harta).bindPopup(`<b>Echipă:</b> ${el.echipa}<br><b>Adresă:</b> ${el.adresa}`);
-                }
+                corp.appendChild(rand);
             });
         }
     </script>

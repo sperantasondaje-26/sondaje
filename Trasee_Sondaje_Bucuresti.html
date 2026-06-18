@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Harta Trasee București</title>
     <!-- Stiluri Leaflet pentru Hartă -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -116,10 +116,9 @@
     <!-- Harta de fundal -->
     <div id="map"></div>
 
-    <!-- Scripturi Leaflet și Logica de conectare -->
-    <script href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Scripturi Leaflet - REPARAT AICI (src în loc de href) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Legătura cu Apps Script-ul tău cel nou, complet și curățat
         const urlWebApp = 'https://script.google.com/macros/s/AKfycbxqyEuhn1IRuwj-fqFVb3tn4NMpVBoOTVygl3qqyAT6N0KXlQLTKa6JVYf_BSlJ1ZI2yw/exec';
 
         let dateSalvate = [];
@@ -143,7 +142,6 @@
             document.getElementById('container-tabel').style.display = 'none';
         }
 
-        // Descarcă datele din scriptul Google
         function incarcaDateleSistemului() {
             fetch(urlWebApp)
                 .then(response => response.json())
@@ -158,12 +156,10 @@
                 });
         }
 
-        // Construiește rândurile în mod automat sub formă de tabel curat
         function popeazaTabelCazuri(elemente) {
             const corp = document.getElementById('corp-tabel');
-            corp.innerHTML = ""; // Ștergem mesajul de încărcare
+            corp.innerHTML = ""; 
 
-            // Filtrăm doar punctele de interes care reprezintă cazurile completate
             const cazuri = elemente.filter(el => el.tip === "punct_interes");
 
             if (cazuri.length === 0) {
@@ -174,12 +170,9 @@
             cazuri.forEach(caz => {
                 let rând = document.createElement('tr');
                 
-                // Procesăm textul pentru a separa Nevoile de Observații din separatorul „| Obs:”
                 let parti = caz.nevoi.split(" | Obs: ");
                 let nevoiText = parti[0] || "";
                 let observatiiText = parti[1] || "-";
-
-                // Curățăm adresa de textul final de geocodare pentru aspect vizual frumos
                 let adresaAfisata = caz.adresa.replace(", bucuresti, romania", "").replace(", Bucuresti, Romania", "");
 
                 rând.innerHTML = `
@@ -192,7 +185,6 @@
             });
         }
 
-        // Desenează punctele și liniile pe hartă în funcție de geocodare
         function deseneazaHartaElemente(elemente) {
             elemente.forEach(el => {
                 if (el.tip === "traseu" && el.lat_start && el.lon_start && el.lat_final && el.lon_final) {

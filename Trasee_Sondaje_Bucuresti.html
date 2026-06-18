@@ -13,6 +13,19 @@
             display: flex; justify-content: center; align-items: center;
             font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; color: #333;
         }
+        /* Stilul ferestrei pop-up cu lista de cazuri */
+        .modal-lista {
+            display: none; position: fixed; top: 60px; left: 10px; right: 10px; bottom: 10px;
+            background: white; z-index: 10005; border-radius: 12px; box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
+            padding: 15px; font-family: Arial, sans-serif; overflow-y: auto;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .modal-title { font-size: 18px; font-weight: bold; color: #333; }
+        .close-btn { background: #cc0000; color: white; border: none; padding: 6px 12px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .tabel-cazuri { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .tabel-cazuri th, .tabel-cazuri td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .tabel-cazuri th { background-color: #f2f2f2; font-weight: bold; }
+        .tabel-cazuri tr:nth-child(even) { background-color: #f9f9f9; }
     </style>
 </head>
 <body>
@@ -20,17 +33,46 @@
     <div id="loading" class="loading-pane">🔄 Se încarcă harta live...</div>
     <div id="map"></div>
 
-    <div style="position: fixed; top: 10px; left: 60px; z-index:9999; font-size:14px; font-family: Arial, sans-serif;">
+    <!-- ZONA DE BUTOANE SUS (Meniu) -->
+    <div style="position: fixed; top: 10px; left: 60px; z-index:9999; font-family: Arial, sans-serif; display: flex; gap: 10px;">
+        <!-- Butonul 1: Formular -->
         <a href="https://docs.google.com/forms/d/e/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA/viewform" 
            target="_blank" 
-           style="text-decoration: none; background-color: #0066cc; color: white; padding: 10px 18px; font-weight: bold; border-radius: 20px; box-shadow: 0px 4px 6px rgba(0,0,0,0.3); display: inline-block;">
+           style="text-decoration: none; background-color: #0066cc; color: white; padding: 10px 15px; font-weight: bold; border-radius: 20px; box-shadow: 0px 4px 6px rgba(0,0,0,0.3); display: inline-block; font-size: 13px;">
            📝 Completează Formularul
         </a>
+        
+        <!-- Butonul 2: Deschide Lista de Cazuri -->
+        <button onclick="deschideLista()" 
+                style="background-color: #2db34a; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 20px; box-shadow: 0px 4px 6px rgba(0,0,0,0.3); cursor: pointer; font-size: 13px;">
+           📋 Vezi Listă Cazuri
+        </button>
+    </div>
+
+    <!-- FEREASTRA ASCUNSĂ CU LISTA DE CAZURI -->
+    <div id="fereastraLista" class="modal-lista">
+        <div class="modal-header">
+            <div class="modal-title">📋 Evidență Cazuri Speciale Semnalate</div>
+            <button class="close-btn" onclick="inchideLista()">Închide ✖</button>
+        </div>
+        <table class="tabel-cazuri">
+            <thead>
+                <tr>
+                    <th>Echipă</th>
+                    <th>Adresă Caz</th>
+                    <th>Interese / Nevoi</th>
+                    <th>Observații Specifice</th>
+                </tr>
+            </thead>
+            <tbody id="corpTabelCazuri">
+                <!-- Rândurile se generează automat aici -->
+            </tbody>
+        </table>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // AICI AM INTEGRAT LINK-UL TĂU NOU DE SCRIPT DEBLOCAT
+        // Link-ul tău web deblocat și funcțional
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqyEuhn1IRuwj-fqFVb3tn4NMpVBoOTVygl3qqyAT6N0KXlQLTKa6JVYf_BSlJ1ZI2yw/exec?_cb=" + new Date().getTime();
 
         const map = L.map('map').setView([44.4396, 26.0963], 12);
@@ -38,13 +80,17 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
+        function deschideLista() { document.getElementById('fereastraLista').style.display = 'block'; }
+        function inchideLista() { document.getElementById('fereastraLista').style.display = 'none'; }
+
         async function incarcatDateLive() {
             try {
                 let res = await fetch(SCRIPT_URL);
                 let elemente = await res.json();
+                let tabelHtml = "";
                 
                 for (let elem of elemente) {
-                    // 1. Desenează liniile roșii ale străzilor (Trasee)
+                    // 1. Desenează traseele pe hartă (Linii roșii)
                     if (elem.tip === "traseu" && elem.lat_start && elem.lat_final) {
                         let coordStart = [elem.lat_start, elem.lon_start];
                         let coordFinal = [elem.lat_final, elem.lon_final];
@@ -56,22 +102,35 @@
                         L.marker(coordFinal).addTo(map).bindPopup(`<b>Punct Final:</b> ${elem.final}`);
                     }
                     
-                    // 2. Desenează bulinele portocalii pentru cazuri (Puncte de interes)
-                    if (elem.tip === "punct_interes" && elem.lat) {
-                        L.circleMarker([elem.lat, elem.lon], {
-                            color: 'orange',
-                            fillColor: '#ff9900',
-                            fillOpacity: 0.9,
-                            radius: 10
-                        }).addTo(map).bindPopup(`
-                            <b>📍 Caz Interes Semnalat</b><br>
-                            <b>Echipa:</b> ${elem.echipa}<br>
-                            <b>Adresă:</b> ${elem.adresa}<br>
-                            <b>Nevoi/Note:</b> ${elem.nevoi}<br>
-                            <b>Rezultat:</b> ${elem.rezultat}
-                        `);
+                    // 2. Pune punctele portocalii pe hartă și adaugă rândul în tabel
+                    if (elem.tip === "punct_interes") {
+                        if (elem.lat) {
+                            L.circleMarker([elem.lat, elem.lon], {
+                                color: 'orange', fillColor: '#ff9900', fillOpacity: 0.9, radius: 10
+                            }).addTo(map).bindPopup(`
+                                <b>📍 Caz Interes Semnalat</b><br>
+                                <b>Echipa:</b> ${elem.echipa}<br>
+                                <b>Adresă:</b> ${elem.adresa}<br>
+                                <b>Detalii:</b> ${elem.nevoi}
+                            `);
+                        }
+
+                        // Separăm textul de interese de cel de observații pentru o afișare curată în tabel
+                        let parti = elem.nevoi.split(" | Obs: ");
+                        let interese = parti[0] || "Interes semnalat";
+                        let observatii = parti[1] || "Fără observații";
+
+                        tabelHtml += `<tr>
+                            <td><b>${elem.echipa}</b></td>
+                            <td>${elem.adresa}</td>
+                            <td>${interese}</td>
+                            <td><span style="color: #0066cc; font-weight: 500;">${observatii}</span></td>
+                        </tr>`;
                     }
                 }
+                
+                document.getElementById('corpTabelCazuri').innerHTML = tabelHtml || "<tr><td colspan='4' style='text-align:center;'>Nu s-au găsit cazuri speciale înregistrate.</td></tr>";
+
             } catch (err) {
                 console.error("Eroare la randare:", err);
             } finally {

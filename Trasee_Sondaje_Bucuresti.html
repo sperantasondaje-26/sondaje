@@ -12,14 +12,16 @@
         /* Zona de butoane sus pe ecran */
         .grup-butoane {
             position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 1000;
-            display: block; text-align: center; width: 90%; max-width: 500px;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 95%; max-width: 600px;
         }
         .btn-meniu {
-            background-color: #28a745; color: white; padding: 10px 18px; border: none; border-radius: 20px;
+            background-color: #28a745; color: white; padding: 10px 14px; border: none; border-radius: 20px;
             font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            margin: 4px; display: inline-block; min-width: 160px;
+            text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center;
+            min-width: 110px; flex: 1;
         }
         .btn-strazi { background-color: #007bff; } /* Albastru pentru străzi */
+        .btn-inapoi { background-color: #343a40; } /* Gri închis pentru Înapoi */
 
         /* Containerele pentru ferestrele suprapuse */
         .container-ecran {
@@ -46,11 +48,15 @@
 </head>
 <body>
 
+    <!-- Meniu principal cu cele trei butoane de control -->
     <div class="grup-butoane">
         <button class="btn-meniu" onclick="deschideFereastra('container-tabel')">📋 Cazuri Speciale</button>
         <button class="btn-meniu btn-strazi" onclick="deschideFereastra('container-strazi')">🚶 Toate Străzile</button>
+        <!-- Butonul nou care trimite la pagina index.html din același folder -->
+        <a href="index.html" class="btn-meniu btn-inapoi">🏠 Pagina Principală</a>
     </div>
 
+    <!-- FEREASTRA 1: CAZURI SPECIALE -->
     <div id="container-tabel" class="container-ecran">
         <div class="antet-fereastra">
             <h2>📋 Cazuri Speciale Semnalate pe Teren</h2>
@@ -73,6 +79,7 @@
         </div>
     </div>
 
+    <!-- FEREASTRA 2: TOATE STRĂZILE PARCURSE -->
     <div id="container-strazi" class="container-ecran">
         <div class="antet-fereastra">
             <h2>🚶 Listă Străzi Parcurse (Istoric)</h2>
@@ -93,7 +100,7 @@
         const urlCsv = `https://docs.google.com/spreadsheets/d/${idTabelGoogle}/export?format=csv&gid=206187394`;
 
         let harta;
-        let straziUniceSet = new Set(); // Reținem străzile fără duplicate
+        let straziUniceSet = new Set();
 
         document.addEventListener("DOMContentLoaded", function() {
             harta = L.map('map').setView([44.4396, 26.0963], 12);
@@ -132,7 +139,6 @@
             let idxEchipa = antet.findIndex(el => el.includes("echipa"));
             let idxStrada = antet.findIndex(el => el.includes("strada"));
 
-            // Identificare coloane pentru cele 4 cazuri din Sheets
             let indiciCazuri = [];
             for (let c = 1; c <= 4; c++) {
                 indiciCazuri.push({
@@ -158,10 +164,8 @@
 
                 if (!strada || strada.toLowerCase().includes("alege o strada")) continue;
 
-                // Salvăm denumirea străzii în lista de străzi unice parcurse
                 straziUniceSet.add(strada.trim());
 
-                // Procesăm cazurile speciale pentru tabelul verde
                 indiciCazuri.forEach(caz => {
                     if (caz.idxAddr !== -1 && celule[caz.idxAddr]) {
                         let numarAdresa = celule[caz.idxAddr].trim();
@@ -187,7 +191,6 @@
                 corpTabel.innerHTML = `<tr><td colspan="4" class="incarcare">Nu sunt cazuri speciale înregistrate.</td></tr>`;
             }
 
-            // Generăm și afișăm lista curată de străzi unice, ordonate alfabetic
             popeazaListaStrazi();
         }
 
@@ -200,7 +203,6 @@
                 return;
             }
 
-            // Transformăm Set-ul în vector și îl sortăm alfabetic (A-Z)
             let straziSortate = Array.from(straziUniceSet).sort((a, b) => a.localeCompare(b));
 
             straziSortate.forEach(strada => {

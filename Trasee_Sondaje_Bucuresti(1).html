@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
@@ -17,9 +17,10 @@
 </head>
 <body>
 
-    <div id="loading" class="loading-pane">🔄 Se încarcă rutele și punctele live din teren...</div>
+    <div id="loading" class="loading-pane">🔄 Se încarcă rutele live din Google Sheets...</div>
     <div id="map"></div>
 
+    <!-- BUTONUL DIN HARTĂ - ACUM CORECTAT PENTRU PRETTY FORMS -->
     <div style="position: fixed; top: 10px; left: 60px; z-index:9999; font-size:14px; font-family: Arial, sans-serif;">
         <a href="https://docs.google.com/forms/d/e/1FAIpQLScUd4jDEQipGEj51LUQs_joFbZZWEM1qvy6lpmVHaSx4EtAkA/viewform?usp=sharing" 
            target="_blank" 
@@ -30,8 +31,8 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Link-ul tău live din Google Sheets Apps Script
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoOoysyhmE8RGtoUdwjHKLayuHxW9er_jJEIhkitCqqu7zCnJQWpncgBHKIYAi-vVzCw/exec";
+        // Link-ul tău live din Google Sheets Apps Script cu bypass cache
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoOoysyhmE8RGtoUdwjHKLayuHxW9er_jJEIhkitCqqu7zCnJQWpncgBHKIYAi-vVzCw/exec?_cb=" + new Date().getTime();
 
         const map = L.map('map').setView([44.4396, 26.0963], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -64,18 +65,14 @@
 
                     if (startAddr && finalAddr) {
                         let coordStart = await geocode(startAddr);
-                        await new Promise(r => setTimeout(r, 1000)); // Pauză scurtă cerută de serverul de hărți
+                        await new Promise(r => setTimeout(r, 1000));
                         let coordFinal = await geocode(finalAddr);
 
                         if (coordStart && coordFinal) {
-                            // Desenăm linia roșie stradală
-                            L.polyline([coordStart, coordFinal], {color: 'red', weight: 5}).addTo(map).bindTooltip(`Echipa: ${echipa}`);
-                            
-                            // Markere Start/Final
+                            L.polyline([coordStart, coordFinal], {color: 'red', weight: 5}).addTo(map).bindTooltip(`Echipa: {echipa}`);
                             L.marker(coordStart).addTo(map).bindPopup(`<b>Start:</b> ${startAddr}`);
                             L.marker(coordFinal).addTo(map).bindPopup(`<b>Final:</b> ${finalAddr}`);
 
-                            // Dacă există interese sau nevoi semnalate
                             if (nevoi.toString().trim() !== "") {
                                 L.circleMarker(coordStart, {color: 'orange', radius: 10, fillOpacity: 0.8}).addTo(map)
                                  .bindPopup(`<b>Echipa:</b> ${echipa}<br><b>Nevoi:</b> ${nevoi}<br><b>Rezultat:</b> ${rezultate}`);
@@ -84,7 +81,7 @@
                     }
                 }
             } catch (err) {
-                console.error("Eroare la procesarea datelor:", err);
+                console.error("Eroare:", err);
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }

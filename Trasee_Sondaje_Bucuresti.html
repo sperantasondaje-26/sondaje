@@ -90,16 +90,15 @@
 
         function proceseazaCsv(text) {
             let linii = [];
-            let randuri = text.split("\n");
+            // Separăm rândurile ținând cont de terminarea corectă a liniilor din exportul Google
+            let randuri = text.split(/\r?\n/);
             if(randuri.length === 0) return linii;
 
-            // Curățăm antetul și transformăm în caractere mici pentru potrivire exactă
             let antet = randuri[0].split(",").map(h => h.trim().toLowerCase());
             
             let idxEchipa = antet.findIndex(el => el.includes("echipa ta"));
             let idxStrada = antet.findIndex(el => el.includes("alege o strada"));
             
-            // Definim configurările pentru toate cele 4 cazuri din tabel
             let configuratiiCazuri = [
                 { addr: "nr adresa caz 1", nevoi: "descriere nevoi caz 1", obs: "observatii caz 1" },
                 { addr: "nr adresa caz 2", nevoi: "descriere nevoi caz 2", obs: "observatii caz 2" },
@@ -118,7 +117,7 @@
             for (let i = 1; i < randuri.length; i++) {
                 if (!randuri[i].trim()) continue;
                 
-                // Spargere corectă a celulelor CSV, ignorând virgulele din interiorul ghilimelelor
+                // Expresie regulată avansată pentru a NU sparge celulele care conțin virgule în interiorul ghilimelelor
                 let celule = randuri[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                 
                 let echipa = celule[idxEchipa] || "-";
@@ -126,19 +125,19 @@
 
                 if (!strada || strada.toLowerCase().includes("alege o strada")) continue;
 
-                // Verificăm pe rând cele 4 cazuri din rândul curent
                 indiciCazuri.forEach(cazIdx => {
                     if (cazIdx.idxAddr !== -1 && celule[cazIdx.idxAddr]) {
-                        let numarAdresa = celule[cazIdx.idxAddr];
-                        let textNevoi = cazIdx.idxNevoi !== -1 ? celule[cazIdx.idxNevoi] : "";
-                        let textObs = cazIdx.idxObs !== -1 ? celule[cazIdx.idxObs] : "";
+                        let numarAdresa = celule[cazIdx.idxAddr].trim();
+                        // Extragem interesele multiple (care conțin virgule) intacte
+                        let textNevoi = cazIdx.idxNevoi !== -1 ? celule[cazIdx.idxNevoi].trim() : "";
+                        let textObs = cazIdx.idxObs !== -1 ? celule[cazIdx.idxObs].trim() : "";
 
-                        if (numarAdresa && numarAdresa.trim() !== "") {
+                        if (numarAdresa !== "") {
                             linii.push({
                                 echipa: echipa,
                                 adresa: strada + ", Nr. " + numarAdresa,
-                                nevoi: textNevoi.trim() || "Interes semnalat",
-                                observatii: textObs.trim() || "-"
+                                nevoi: textNevoi || "-", 
+                                observatii: textObs || "-"
                             });
                         }
                     }

@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
@@ -61,7 +61,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ID-ul bazei tale de date configurat corect
         const idTabelGoogle = '1O_XyQKzPOYiYGx7RPgJ-s6wl88c-YCmmUDGCf3RkOuQ'; 
         const urlCsv = `https://docs.google.com/spreadsheets/d/${idTabelGoogle}/export?format=csv&gid=206187394`;
 
@@ -85,52 +84,49 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare de conexiune. Asigurați-vă că fișierul Sheets este setat pe "Oricine are linkul poate vizualiza".</td></tr>`;
+                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare de conexiune.</td></tr>`;
                 });
         }
 
-        // Citire inteligentă rând cu rând din textul curat din Google Sheets
         function proceseazaCsv(text) {
             let linii = [];
             let randuri = text.split("\n");
             if(randuri.length === 0) return linii;
 
-            // Spargem antetul pentru identificare poziții coloane
+            // Curățăm antetul și transformăm în caractere mici pentru potrivire exactă
             let antet = randuri[0].split(",").map(h => h.trim().toLowerCase());
             
-            // Căutăm pozițiile de citire bazate pe titlurile trimise de tine
-            let idxEchipa = randuri[0].toLowerCase().split(",").findIndex(el => el.includes("echipa ta"));
-            let idxStrada = randuri[0].toLowerCase().split(",").findIndex(el => el.includes("alege o strada"));
+            let idxEchipa = antet.findIndex(el => el.includes("echipa ta"));
+            let idxStrada = antet.findIndex(el => el.includes("alege o strada"));
             
-            // Seturi dinamice pentru cazurile active (Caz 1, Caz 2, Caz 3, Caz 4)
+            // Definim configurările pentru toate cele 4 cazuri din tabel
             let configuratiiCazuri = [
                 { addr: "nr adresa caz 1", nevoi: "descriere nevoi caz 1", obs: "observatii caz 1" },
                 { addr: "nr adresa caz 2", nevoi: "descriere nevoi caz 2", obs: "observatii caz 2" },
                 { addr: "nr adresa caz 3", nevoi: "descriere nevoi caz 3", obs: "observatii caz 3" },
-                { addr: "nr adresa caz 4", nevoi: "descriere nevoi 4", obs: "observatii caz 4" }
+                { addr: "nr adresa caz 4", nevoi: "descriere nevoi 4",     obs: "observatii caz 4" }
             ];
 
             let indiciCazuri = configuratiiCazuri.map(c => {
                 return {
-                    idxAddr: randuri[0].toLowerCase().split(",").findIndex(el => el.includes(c.addr)),
-                    idxNevoi: randuri[0].toLowerCase().split(",").findIndex(el => el.includes(c.nevoi)),
-                    idxObs: randuri[0].toLowerCase().split(",").findIndex(el => el.includes(c.obs))
+                    idxAddr: antet.findIndex(el => el.includes(c.addr)),
+                    idxNevoi: antet.findIndex(el => el.includes(c.nevoi)),
+                    idxObs: antet.findIndex(el => el.includes(c.obs))
                 };
             });
 
-            // Parcurgem fiecare rând trimis de formulare
             for (let i = 1; i < randuri.length; i++) {
                 if (!randuri[i].trim()) continue;
                 
-                // Spargem celulele (ținem cont de virgule elementare)
+                // Spargere corectă a celulelor CSV, ignorând virgulele din interiorul ghilimelelor
                 let celule = randuri[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                 
-                let echipa = celule[idxEchipa] || "Echipă";
+                let echipa = celule[idxEchipa] || "-";
                 let strada = celule[idxStrada] || "";
 
                 if (!strada || strada.toLowerCase().includes("alege o strada")) continue;
 
-                // Verificăm cele 4 cazuri posibile din rândul curent
+                // Verificăm pe rând cele 4 cazuri din rândul curent
                 indiciCazuri.forEach(cazIdx => {
                     if (cazIdx.idxAddr !== -1 && celule[cazIdx.idxAddr]) {
                         let numarAdresa = celule[cazIdx.idxAddr];
@@ -141,8 +137,8 @@
                             linii.push({
                                 echipa: echipa,
                                 adresa: strada + ", Nr. " + numarAdresa,
-                                nevoi: textNevoi || "Interes semnalat",
-                                observatii: textObs || "-"
+                                nevoi: textNevoi.trim() || "Interes semnalat",
+                                observatii: textObs.trim() || "-"
                             });
                         }
                     }

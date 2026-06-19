@@ -96,42 +96,7 @@
 
         let harta;
         let straziUniceSet = new Set();
-        let vectorLiniiInstalate = [];
-
-        // 🛣️ Dicționar geometric fix (Acoperă străzile din zona Labirint / Călărași / Popa Nan)
-        const bazeGeometriceStrazi = {
-            "popa nan": [[44.43402, 26.12175], [44.43472, 26.12211], [44.43573, 26.12255], [44.43695, 26.12311], [44.43851, 26.12384], [44.44105, 26.12502]],
-            "traian": [[44.42851, 26.11623], [44.43045, 26.11681], [44.43265, 26.11742], [44.43460, 26.11802], [44.43641, 26.11855], [44.43872, 26.11921], [44.44111, 26.11985], [44.44315, 26.12042], [44.44685, 26.12140]],
-            "tepes voda": [[44.43475, 26.11925], [44.43521, 26.12140], [44.43555, 26.12302], [44.43615, 26.12570]],
-            "calasilor": [[44.43231, 26.10825], [44.43258, 26.11120], [44.43292, 26.11545], [44.43341, 26.12141], [44.43410, 26.12750], [44.43465, 26.13110]],
-            "labirint": [[44.43085, 26.11692], [44.43101, 26.11895], [44.43120, 26.12110]],
-            "matei basarab": [[44.43212, 26.11051], [44.43242, 26.11410], [44.43271, 26.11745], [44.43315, 26.12190], [44.43345, 26.12520]],
-            "kiritescu": [[44.47452, 26.11281], [44.47515, 26.11320], [44.47581, 26.11365]],
-            "mantuleasa": [[44.43551, 26.11322], [44.43685, 26.11270], [44.43852, 26.11211]],
-            "parfumului": [[44.43182, 26.11451], [44.43255, 26.11512], [44.43322, 26.11581]],
-            "anton pann": [[44.43051, 26.10981], [44.43152, 26.11251]],
-            "udriste": [[44.43121, 26.10751], [44.43322, 26.10621]],
-            "romulus": [[44.43051, 26.11351], [44.43282, 26.11261], [44.43491, 26.11181], [44.43652, 26.11122]],
-            "remus": [[44.43021, 26.11221], [44.43122, 26.11181], [44.43222, 26.11151]],
-            "logofat tautu": [[44.41951, 26.11551], [44.41822, 26.12351]],
-            "lucian blaga": [[44.42551, 26.12321], [44.42752, 26.12241], [44.42982, 26.12155]],
-            "theodor sperantia": [[44.42821, 26.13221], [44.43012, 26.13851], [44.43252, 26.14551]],
-            "turturelelor": [[44.42752, 26.12251], [44.42512, 26.12361], [44.42322, 26.12451]],
-            "bradului": [[44.42622, 26.12151], [44.42542, 26.12291], [44.42482, 26.12422]],
-            "foisorului": [[44.42151, 26.12421], [44.41912, 26.12611], [44.41652, 26.12851]],
-            "vitan": [[44.42155, 26.12481], [44.41652, 26.12751], [44.41122, 26.13111]],
-            "valeriu braniste": [[44.42251, 26.12421], [44.42382, 26.12681]],
-            "alexandru moruzi": [[44.41851, 26.12821], [44.41682, 26.13251]],
-            "hristos botezatorul": [[44.43751, 26.10421], [44.43922, 26.10351]],
-            "sfanta vineri": [[44.43181, 26.10451], [44.42922, 26.10681]],
-            "lipscani": [[44.43251, 26.09651], [44.43122, 26.10451]],
-            "dristorului": [[44.42782, 26.13451], [44.42352, 26.13681], [44.41822, 26.13951]],
-            "baba novac": [[44.42252, 26.13881], [44.42192, 26.14621], [44.42122, 26.15551]],
-            "visinilor": [[44.43202, 26.11005], [44.43225, 26.11145], [44.43251, 26.11215]],
-            "zefirului": [[44.43281, 26.11051], [44.43312, 26.11182], [44.43332, 26.11291]],
-            "decebal": [[44.43152, 26.13125], [44.43185, 26.13650], [44.43222, 26.14251]],
-            "unirii": [[44.42721, 26.09355], [44.42710, 26.10220], [44.42681, 26.11550], [44.42582, 26.12310], [44.42512, 26.12852]]
-        };
+        let straturiLiniiIncarcate = {};
 
         document.addEventListener("DOMContentLoaded", function() {
             harta = L.map('map').setView([44.4335, 26.1195], 14); 
@@ -161,9 +126,8 @@
             fetch(urlCsv + "&t=" + new Date().getTime())
                 .then(response => response.text())
                 .then(text => {
-                    // 🌟 REPARAT CRITIC: Folosim PapaParse pentru a sparge corect randurile blocate de text pe mai multe linii
                     Papa.parse(text, {
-                        header: true, // Folosește primul rând drept chei de acces
+                        header: true,
                         skipEmptyLines: true,
                         complete: function(results) {
                             proceseazaDateObiecte(results.data);
@@ -172,14 +136,13 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare tehnică de rețea.</td></tr>`;
+                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare de rețea.</td></tr>`;
                 });
         }
 
         function proceseazaDateObiecte(obiecteRanduri) {
             if (obiecteRanduri.length === 0) return;
 
-            // Identificare dinamică a numelor coloanelor (pentru a evita problemele majusculelor sau spatiilor)
             let chei = Object.keys(obiecteRanduri[0]);
             let colEchipa = chei.find(k => /echipa/i.test(k));
             let colStrada = chei.find(k => /strada|alege/i.test(k));
@@ -205,13 +168,11 @@
 
                 if (!stradaRaw || stradaRaw.toLowerCase().includes("alege o strada") || stradaRaw === "-") return;
 
-                // Curățare nume stradă pentru listă
                 let numeStradaCurat = stradaRaw.split(',')[0].trim();
                 if (numeStradaCurat) {
                     straziUniceSet.add(numeStradaCurat);
                 }
 
-                // Extragere cazuri speciale semnalate
                 let arrayCazuri = [];
                 if (colCazNr1 && randDate[colCazNr1] && randDate[colCazNr1] !== "-") {
                     arrayCazuri.push({ nr: randDate[colCazNr1], nevoi: randDate[colCazNevoi1], obs: "" });
@@ -243,7 +204,7 @@
             }
 
             popeazaListaStrazi();
-            deseneazaTraseeInstanteFaraInternet();
+            deseneazaToateTraseelePoligonaleReale();
         }
 
         function popeazaListaStrazi() {
@@ -263,32 +224,67 @@
             });
         }
 
-        function deseneazaTraseeInstanteFaraInternet() {
-            vectorLiniiInstalate.forEach(linie => harta.removeLayer(linie));
-            vectorLiniiInstalate = [];
+        // 🧠 REVENIRE LA SOLUȚIA INTELIGENTĂ: Satelitul desenează live formele corecte, direct pe drum
+        function deseneazaToateTraseelePoligonaleReale() {
+            straziUniceSet.forEach(strada => {
+                if (straturiLiniiIncarcate[strada]) return;
 
-            straziUniceSet.forEach(stradaInregistrata => {
-                let textBrutCurat = stradaInregistrata.toLowerCase()
-                                                     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                                                     .trim();
+                // Curăță cuvintele ajutătoare pentru a trimite interogarea curată (ex: "Stefan Mihaileanu")
+                let doarNumele = strada.replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim();
 
-                for (let cheieDictionar in bazeGeometriceStrazi) {
-                    if (textBrutCurat.includes(cheieDictionar)) {
-                        let punctePoligonaleReale = bazeGeometriceStrazi[cheieDictionar];
-                        
-                        let linieRosie = L.polyline(punctePoligonaleReale, {
-                            color: '#dc2626',   
-                            weight: 6,          
-                            opacity: 0.5,       
-                            lineJoin: 'round',
-                            lineCap: 'round'
-                        }).addTo(harta);
+                let queryOverpass = `[out:json][timeout:25];
+                    area["name"="București"]->.searchArea;
+                    (
+                      way["name"~"${doarNumele}", i](area.searchArea);
+                    );
+                    out body; >; out skel qt;`;
 
-                        linieRosie.bindPopup(`<b>Ancoră 🛣️ ${stradaInregistrata}</b><br><span style="color:green;font-weight:bold;">Sincronizat perfect!</span>`);
-                        vectorLiniiInstalate.push(linieRosie);
-                        break; 
-                    }
-                }
+                let urlApi = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(queryOverpass);
+
+                fetch(urlApi)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.elements || data.elements.length === 0) return;
+
+                        let noduri = {};
+                        data.elements.forEach(el => {
+                            if (el.type === 'node') {
+                                noduri[el.id] = [el.lat, el.lon];
+                            }
+                        });
+
+                        let liniiStradaGrup = [];
+
+                        data.elements.forEach(el => {
+                            if (el.type === 'way' && el.nodes) {
+                                let puncteTraseuReal = [];
+                                el.nodes.forEach(nodeId => {
+                                    if (noduri[nodeId]) {
+                                        puncteTraseuReal.push(noduri[nodeId]);
+                                    }
+                                });
+
+                                if (puncteTraseuReal.length > 0) {
+                                    // Linie roșie semi-transparentă care merge STRICT pe stradă, nu prin case
+                                    let liniePoligonalatransport = L.polyline(puncteTraseuReal, {
+                                        color: '#dc2626',    // Roșu aprins, excelent la lumina zilei
+                                        weight: 6,           // Grosime perfectă
+                                        opacity: 0.45,       // Se vede textul străzii dedesubt
+                                        lineJoin: 'round',
+                                        lineCap: 'round'
+                                    }).addTo(harta);
+
+                                    liniePoligonalatransport.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Traseu corelat geografic!</span>`);
+                                    liniiStradaGrup.push(liniePoligonalatransport);
+                                }
+                            }
+                        });
+
+                        if(liniiStradaGrup.length > 0) {
+                            straturiLiniiIncarcate[strada] = liniiStradaGrup;
+                        }
+                    })
+                    .catch(e => console.error("Eroare la descărcarea geometriei pentru: " + strada, e));
             });
         }
     </script>

@@ -136,7 +136,7 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare de rețea.</td></tr>`;
+                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare de conexiune la baza de date.</td></tr>`;
                 });
         }
 
@@ -168,6 +168,7 @@
 
                 if (!stradaRaw || stradaRaw.toLowerCase().includes("alege o strada") || stradaRaw === "-") return;
 
+                // Salvează numele exact așa cum vine din tabel (Ex: "Intrare Kiritescu, Bucuresti")
                 let numeStradaCurat = stradaRaw.split(',')[0].trim();
                 if (numeStradaCurat) {
                     straziUniceSet.add(numeStradaCurat);
@@ -228,7 +229,7 @@
             straziUniceSet.forEach(strada => {
                 if (straturiLiniiIncarcate[strada]) return;
 
-                // Curățare inteligentă a prefixelor comune pentru interogarea Overpass
+                // Curățare corectă a cuvintelor descriptive pentru interogarea Overpass API
                 let doarNumele = strada.replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim();
 
                 let queryOverpass = `[out:json][timeout:25];
@@ -264,18 +265,17 @@
                                 });
 
                                 if (puncteTraseuReal.length > 0) {
-                                    // CORECTAT: L.polyline corect tehnic, culoare albastră fidelă drumului
-                                    let liniePoligonala = L.polyline(puncteTraseuReal, {
-                                        color: '#007bff',    // Albastru intens, curat
-                                        weight: 6,           
-                                        opacity: 0.6,       
+                                    // 🌟 REPARAT ABSOLUT: L.polyline este definit curat, culoarea este albastră și se mulează fix pe drum
+                                    let liniePoligonală = L.polyline(puncteTraseuReal, {
+                                        color: '#0056b3',    // Albastru intens, vizibil și foarte elegant
+                                        weight: 6,           // Grosime optimă
+                                        opacity: 0.6,        // Semi-transparent ca să se citească numele străzii dedesubt
                                         lineJoin: 'round',
                                         lineCap: 'round'
                                     }).addTo(harta);
 
-                                    liniePoligonalatransport = liniePoligonala; // Siguranță referință
-                                    liniePoligonala.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:blue;font-weight:bold;">Traseu marcat!</span>`);
-                                    liniiStradaGrup.push(liniePoligonala);
+                                    liniePoligonală.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:blue;font-weight:bold;">Traseu corelat din Sheets!</span>`);
+                                    liniiStradaGrup.push(liniePoligonală);
                                 }
                             }
                         });

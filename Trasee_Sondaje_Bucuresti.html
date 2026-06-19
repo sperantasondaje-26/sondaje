@@ -88,6 +88,7 @@
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         const idTabelGoogle = '1O_XyQKzPOYiYGx7RPgJ-s6wl88c-YCmmUDGCf3RkOuQ'; 
         const urlCsv = `https://docs.google.com/spreadsheets/d/${idTabelGoogle}/export?format=csv&gid=206187394`;
@@ -97,7 +98,7 @@
         let straziUniceSet = new Set();
         let vectorLiniiInstalate = [];
 
-        // 🛣️ Baza geometrică fixă optimizată pentru potrivire parțială text (fără diacritice, litere mici)
+        // 🛣️ Dicționar geometric fix (Acoperă străzile din zona Labirint / Călărași / Popa Nan)
         const bazeGeometriceStrazi = {
             "popa nan": [[44.43402, 26.12175], [44.43472, 26.12211], [44.43573, 26.12255], [44.43695, 26.12311], [44.43851, 26.12384], [44.44105, 26.12502]],
             "traian": [[44.42851, 26.11623], [44.43045, 26.11681], [44.43265, 26.11742], [44.43460, 26.11802], [44.43641, 26.11855], [44.43872, 26.11921], [44.44111, 26.11985], [44.44315, 26.12042], [44.44685, 26.12140]],
@@ -110,7 +111,6 @@
             "parfumului": [[44.43182, 26.11451], [44.43255, 26.11512], [44.43322, 26.11581]],
             "anton pann": [[44.43051, 26.10981], [44.43152, 26.11251]],
             "udriste": [[44.43121, 26.10751], [44.43322, 26.10621]],
-            "cauzasi": [[44.42821, 26.11051], [44.42952, 26.11151]],
             "romulus": [[44.43051, 26.11351], [44.43282, 26.11261], [44.43491, 26.11181], [44.43652, 26.11122]],
             "remus": [[44.43021, 26.11221], [44.43122, 26.11181], [44.43222, 26.11151]],
             "logofat tautu": [[44.41951, 26.11551], [44.41822, 26.12351]],
@@ -119,40 +119,18 @@
             "turturelelor": [[44.42752, 26.12251], [44.42512, 26.12361], [44.42322, 26.12451]],
             "bradului": [[44.42622, 26.12151], [44.42542, 26.12291], [44.42482, 26.12422]],
             "foisorului": [[44.42151, 26.12421], [44.41912, 26.12611], [44.41652, 26.12851]],
-            "vitan": [[44.42155, 26.12481], [44.41652, 26.12751], [44.41122, 26.13111], [44.40622, 26.13551]],
-            "ziduri mosi": [[44.45121, 26.12721], [44.45552, 26.12981]],
+            "vitan": [[44.42155, 26.12481], [44.41652, 26.12751], [44.41122, 26.13111]],
             "valeriu braniste": [[44.42251, 26.12421], [44.42382, 26.12681]],
-            "maxim gorki": [[44.46321, 26.09151], [44.46552, 26.09321]],
             "alexandru moruzi": [[44.41851, 26.12821], [44.41682, 26.13251]],
             "hristos botezatorul": [[44.43751, 26.10421], [44.43922, 26.10351]],
             "sfanta vineri": [[44.43181, 26.10451], [44.42922, 26.10681]],
             "lipscani": [[44.43251, 26.09651], [44.43122, 26.10451]],
-            "halelor": [[44.42881, 26.10021], [44.42822, 26.10351]],
-            "bratianu": [[44.43451, 26.10221], [44.42852, 26.10121]],
             "dristorului": [[44.42782, 26.13451], [44.42352, 26.13681], [44.41822, 26.13951]],
             "baba novac": [[44.42252, 26.13881], [44.42192, 26.14621], [44.42122, 26.15551]],
-            "muresana": [[44.42151, 26.14121], [44.42022, 26.14351]],
-            "minis": [[44.43651, 26.16521], [44.43822, 26.16781]],
-            "scoala de inot": [[44.41251, 26.11151], [44.41322, 26.11281]],
-            "plugarilor": [[44.41451, 26.11321], [44.41582, 26.11581]],
-            "sirenelor": [[44.42351, 26.07621], [44.42212, 26.08451]],
-            "popa radu": [[44.43721, 26.12151], [44.43852, 26.12421]],
-            "ceaus radu": [[44.43021, 26.10651], [44.43082, 26.10821]],
-            "negru voda": [[44.43051, 26.10321], [44.42922, 26.10451]],
-            "iuliu barasch": [[44.43151, 26.10551], [44.43022, 26.10681]],
-            "olteni": [[44.42981, 26.10521], [44.42852, 26.10851]],
-            "banul udrea": [[44.41921, 26.12521], [44.42152, 26.12851]],
-            "ion minulescu": [[44.41752, 26.12121], [44.41492, 26.12451], [44.41151, 26.12855]],
-            "octavian": [[44.42421, 26.11851], [44.42552, 26.12121]],
-            "gaspar gorjan": [[44.41821, 26.12351], [44.41952, 26.12481]],
-            "decebal": [[44.43152, 26.13125], [44.43185, 26.13650], [44.43222, 26.14251]],
-            "unirii": [[44.42721, 26.09355], [44.42710, 26.10220], [44.42681, 26.11550], [44.42582, 26.12310], [44.42512, 26.12852]],
-            "corneliu coposu": [[44.43121, 26.10421], [44.42952, 26.11181]],
-            "octavian goga": [[44.42521, 26.11421], [44.42312, 26.12651]],
-            "mircea voda": [[44.42981, 26.10921], [44.42122, 26.11351]],
-            "burebista": [[44.42451, 26.12721], [44.42322, 26.13451]],
             "visinilor": [[44.43202, 26.11005], [44.43225, 26.11145], [44.43251, 26.11215]],
-            "zefirului": [[44.43281, 26.11051], [44.43312, 26.11182], [44.43332, 26.11291]]
+            "zefirului": [[44.43281, 26.11051], [44.43312, 26.11182], [44.43332, 26.11291]],
+            "decebal": [[44.43152, 26.13125], [44.43185, 26.13650], [44.43222, 26.14251]],
+            "unirii": [[44.42721, 26.09355], [44.42710, 26.10220], [44.42681, 26.11550], [44.42582, 26.12310], [44.42512, 26.12852]]
         };
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -183,31 +161,37 @@
             fetch(urlCsv + "&t=" + new Date().getTime())
                 .then(response => response.text())
                 .then(text => {
-                    proceseazaCsvExcel(text);
+                    // 🌟 REPARAT CRITIC: Folosim PapaParse pentru a sparge corect randurile blocate de text pe mai multe linii
+                    Papa.parse(text, {
+                        header: true, // Folosește primul rând drept chei de acces
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            proceseazaDateObiecte(results.data);
+                        }
+                    });
                 })
                 .catch(err => {
                     console.error(err);
-                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare la citirea datelor.</td></tr>`;
+                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare tehnică de rețea.</td></tr>`;
                 });
         }
 
-        function proceseazaCsvExcel(text) {
-            let randuri = text.split(/\r?\n/);
-            if(randuri.length <= 1) return;
+        function proceseazaDateObiecte(obiecteRanduri) {
+            if (obiecteRanduri.length === 0) return;
 
-            let antetRaw = randuri[0].split(",");
+            // Identificare dinamică a numelor coloanelor (pentru a evita problemele majusculelor sau spatiilor)
+            let chei = Object.keys(obiecteRanduri[0]);
+            let colEchipa = chei.find(k => /echipa/i.test(k));
+            let colStrada = chei.find(k => /strada|alege/i.test(k));
+
+            let colCazNr1 = chei.find(k => /nr.*adresa.*caz.*1/i.test(k));
+            let colCazNevoi1 = chei.find(k => /descriere.*nevoi.*caz.*1/i.test(k));
             
-            let idxEchipa = antetRaw.findIndex(el => /echipa/i.test(el));
-            let idxStrada = antetRaw.findIndex(el => /strada|alege/i.test(el)); 
+            let colCazNr2 = chei.find(k => /nr.*adresa.*caz.*2/i.test(k));
+            let colCazNevoi2 = chei.find(k => /descriere.*nevoi.*caz.*2/i.test(k));
+            let colCazObs2 = chei.find(k => /observatii.*2/i.test(k));
 
-            let idxCazNr1 = antetRaw.findIndex(el => /nr.*adresa.*caz.*1/i.test(el));
-            let idxCazNevoi1 = antetRaw.findIndex(el => /descriere.*nevoi.*caz.*1/i.test(el));
-            
-            let idxCazNr2 = antetRaw.findIndex(el => /nr.*adresa.*caz.*2/i.test(el));
-            let idxCazNevoi2 = antetRaw.findIndex(el => /descriere.*nevoi.*caz.*2/i.test(el));
-            let idxCazObs2 = antetRaw.findIndex(el => /observatii.*2/i.test(el));
-
-            let idxCazNr3 = antetRaw.findIndex(el => /nr.*adresa.*caz.*3/i.test(el));
+            let colCazNr3 = chei.find(k => /nr.*adresa.*caz.*3/i.test(k));
 
             let corpTabel = document.getElementById('corp-tabel');
             corpTabel.innerHTML = "";
@@ -215,47 +199,44 @@
 
             let areCazuri = false;
 
-            for (let i = 1; i < randuri.length; i++) {
-                if (!randuri[i].trim()) continue;
-                
-                let celule = randuri[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
-                
-                let echipa = celule[idxEchipa] || "-";
-                let strada = celule[idxStrada] || "";
+            obiecteRanduri.forEach(randDate => {
+                let echipa = randDate[colEchipa] || "-";
+                let stradaRaw = randDate[colStrada] || "";
 
-                if (!strada || strada.toLowerCase().includes("alege o strada") || strada === "-") continue;
+                if (!stradaRaw || stradaRaw.toLowerCase().includes("alege o strada") || stradaRaw === "-") return;
 
-                // Curățăm denumirea brută introdusă pentru a o afișa frumos în listă
-                let numeStradaCurat = strada.split(',')[0].trim();
-                if(numeStradaCurat) {
+                // Curățare nume stradă pentru listă
+                let numeStradaCurat = stradaRaw.split(',')[0].trim();
+                if (numeStradaCurat) {
                     straziUniceSet.add(numeStradaCurat);
                 }
 
-                let dateCazuriPeRand = [];
-                if (idxCazNr1 !== -1 && celule[idxCazNr1] && celule[idxCazNr1] !== "-") {
-                    dateCazuriPeRand.push({ nr: celule[idxCazNr1], nevoi: celule[idxCazNevoi1], obs: "" });
+                // Extragere cazuri speciale semnalate
+                let arrayCazuri = [];
+                if (colCazNr1 && randDate[colCazNr1] && randDate[colCazNr1] !== "-") {
+                    arrayCazuri.push({ nr: randDate[colCazNr1], nevoi: randDate[colCazNevoi1], obs: "" });
                 }
-                if (idxCazNr2 !== -1 && celule[idxCazNr2] && celule[idxCazNr2] !== "-") {
-                    dateCazuriPeRand.push({ nr: celule[idxCazNr2], nevoi: celule[idxCazNevoi2], obs: celule[idxCazObs2] });
+                if (colCazNr2 && randDate[colCazNr2] && randDate[colCazNr2] !== "-") {
+                    arrayCazuri.push({ nr: randDate[colCazNr2], nevoi: randDate[colCazNevoi2], obs: randDate[colCazObs2] });
                 }
-                if (idxCazNr3 !== -1 && celule[idxCazNr3] && celule[idxCazNr3] !== "-") {
-                    dateCazuriPeRand.push({ nr: celule[idxCazNr3], nevoi: "", obs: "" });
+                if (colCazNr3 && randDate[colCazNr3] && randDate[colCazNr3] !== "-") {
+                    arrayCazuri.push({ nr: randDate[colCazNr3], nevoi: "", obs: "" });
                 }
 
-                if (dateCazuriPeRand.length > 0) {
+                if (arrayCazuri.length > 0) {
                     areCazuri = true;
-                    dateCazuriPeRand.forEach(caz => {
-                        let rand = document.createElement('tr');
-                        rand.innerHTML = `
+                    arrayCazuri.forEach(caz => {
+                        let tr = document.createElement('tr');
+                        tr.innerHTML = `
                             <td style="font-weight:bold; color:#0056b3;">${echipa}</td>
                             <td>${numeStradaCurat}, Nr. ${caz.nr}</td>
                             <td>${caz.nevoi || "-"}</td>
                             <td style="background-color: #fffdf0; font-style: italic;">${caz.obs || "-"}</td>
                         `;
-                        corpTabel.appendChild(rand);
+                        corpTabel.appendChild(tr);
                     });
                 }
-            }
+            });
 
             if (!areCazuri) {
                 corpTabel.innerHTML = `<tr><td colspan="4" class="incarcare">Nu sunt cazuri speciale înregistrate.</td></tr>`;
@@ -282,33 +263,30 @@
             });
         }
 
-        // ⚡ NOUA LOGICĂ DE SARCINĂ PARTIALĂ (Filtrare inteligentă text brut din Google Sheets)
         function deseneazaTraseeInstanteFaraInternet() {
             vectorLiniiInstalate.forEach(linie => harta.removeLayer(linie));
             vectorLiniiInstalate = [];
 
             straziUniceSet.forEach(stradaInregistrata => {
-                // Scoaterea diacriticelor și transformarea în litere mici pentru textul din Sheets
                 let textBrutCurat = stradaInregistrata.toLowerCase()
                                                      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                                                      .trim();
 
-                // Căutăm dacă oricare dintre cheile noastre din dicționar se regăsește în textul din Sheets
                 for (let cheieDictionar in bazeGeometriceStrazi) {
                     if (textBrutCurat.includes(cheieDictionar)) {
                         let punctePoligonaleReale = bazeGeometriceStrazi[cheieDictionar];
                         
                         let linieRosie = L.polyline(punctePoligonaleReale, {
-                            color: '#dc2626',   // Roșu intens
-                            weight: 6,          // Grosime perfectă
-                            opacity: 0.5,       // Semi-transparent ca să se vadă numele străzii dedesubt
+                            color: '#dc2626',   
+                            weight: 6,          
+                            opacity: 0.5,       
                             lineJoin: 'round',
                             lineCap: 'round'
                         }).addTo(harta);
 
-                        linieRosie.bindPopup(`<b>🛣️ ${stradaInregistrata}</b><br><span style="color:green;font-weight:bold;">Traseu corelat din Sheets!</span>`);
+                        linieRosie.bindPopup(`<b>Ancoră 🛣️ ${stradaInregistrata}</b><br><span style="color:green;font-weight:bold;">Sincronizat perfect!</span>`);
                         vectorLiniiInstalate.push(linieRosie);
-                        break; // Am găsit potrivirea pentru această stradă, trecem la următoarea
+                        break; 
                     }
                 }
             });

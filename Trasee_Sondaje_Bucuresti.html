@@ -3,139 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harta Trasee București - Foișor - Delea Veche - REPARAT</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <title>Harta Trasee București</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* Setează înălțimea completă pentru corp și HTML */
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
-
-        /* Container pentru panoul de control */
-        #control-panel {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000; /* Asigură-te că este deasupra hărții */
-            display: flex;
-            gap: 10px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.9); /* Mai puțin transparent */
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f6f9; }
+        #map { height: 100vh; width: 100vw; z-index: 1; }
+        
+        .grup-butoane {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 1000;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 95%; max-width: 600px;
         }
-
-        /* Stil pentru butoane */
-        .btn {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 12px 18px; /* Mai mari */
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
+        .btn-meniu {
+            background-color: #28a745; color: white; padding: 10px 14px; border: none; border-radius: 20px;
+            font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center;
+            min-width: 110px; flex: 1;
         }
+        .btn-strazi { background-color: #007bff; }
+        .btn-inapoi { background-color: #343a40; }
 
-        /* Culori pentru butoane */
-        .btn-cazuri { background-color: #28a745; } /* Verde */
-        .btn-strazi { background-color: #007bff; } /* Albastru */
-        .btn-pagina { background-color: #343a40; } /* Gri închis */
-
-        /* Efect de hover */
-        .btn:hover { opacity: 0.9; }
-
-        /* Efect de click */
-        .btn:active { transform: translateY(1px); }
-
-        /* Container pentru hartă */
-        #map { height: 100%; width: 100%; z-index: 1; }
+        .container-ecran {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: white; z-index: 1050; display: none; flex-direction: column; box-sizing: border-box;
+        }
+        .antet-fereastra { padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; display: flex; justify-content: space-between; align-items: center; }
+        .antet-fereastra h2 { margin: 0; font-size: 16px; color: #333; }
+        .btn-inchide { background-color: #dc3545; color: white; border: none; padding: 8px 14px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .zona-scroll { flex: 1; overflow-y: auto; padding: 12px; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid #dee2e6; padding: 10px 8px; text-align: left; vertical-align: top; }
+        th { background-color: #343a40; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        
+        .lista-strazi { list-style-type: none; padding: 0; margin: 0; }
+        .lista-strazi li { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; color: #222; display: flex; align-items: center; gap: 8px; }
+        .lista-strazi li::before { content: "🛣️"; }
+        
+        .incarcare { text-align: center; padding: 30px; font-style: italic; color: #666; }
     </style>
 </head>
 <body>
 
-    <div id="control-panel">
-        <a href="#" class="btn btn-cazuri" id="btn-cazuri">
-            <span class="icon">📋</span>
-            Cazuri Speciale
-        </a>
-        <a href="#" class="btn btn-strazi" id="btn-strazi">
-            <span class="icon">🏃</span>
-            Toate Străzile
-        </a>
-        <a href="#" class="btn btn-pagina" id="btn-pagina">
-            <span class="icon">🏠</span>
-            Pagina Principală
-        </a>
+    <div class="grup-butoane">
+        <button class="btn-meniu" onclick="deschideCazuriSecurizat()">📋 Cazuri Speciale</button>
+        <button class="btn-meniu btn-strazi" onclick="deschideFereastra('container-strazi')">🚶 Toate Străzile</button>
+        <a href="index.html" class="btn-meniu btn-inapoi">🏠 Pagina Principală</a>
+    </div>
+
+    <div id="container-tabel" class="container-ecran">
+        <div class="antet-fereastra">
+            <h2>📋 Cazuri Speciale Semnalate pe Teren</h2>
+            <button class="btn-inchide" onclick="inchideToate()">✖ Închide</button>
+        </div>
+        <div class="zona-scroll">
+            <table id="tabel-date">
+                <thead>
+                    <tr>
+                        <th>Echipă</th>
+                        <th>Adresă Caz</th>
+                        <th>Interese / Nevoi</th>
+                        <th>Observații</th>
+                    </tr>
+                </thead>
+                <tbody id="corp-tabel">
+                    <tr><td colspan="4" class="incarcare">Se încarcă datele...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="container-strazi" class="container-ecran">
+        <div class="antet-fereastra">
+            <h2>🚶 Listă Străzi Parcurse (Istoric)</h2>
+            <button class="btn-inchide" onclick="inchideToate()">✖ Închide</button>
+        </div>
+        <div class="zona-scroll">
+            <ul id="lista-strazi-parcurse" class="lista-strazi">
+                <li class="incarcare">Se generează lista străzilor...</li>
+            </ul>
+        </div>
     </div>
 
     <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Inițializează harta și setează centrul și zoom-ul
-        var map = L.map('map').setView([44.4335, 26.1195], 14); // Coordonate pentru Foisorul de Foc, București
+        // Sincronizare directă cu baza ta de date din Google Sheets
+        const idTabelGoogle = '1O_XyQKzPOYiYGx7RPgJ-s6wl88c-YCmmUDGCf3RkOuQ'; 
+        const urlCsv = `https://docs.google.com/spreadsheets/d/${idTabelGoogle}/export?format=csv&gid=206187394`;
+        const parolaCorecta = 'titughejan@2026';
 
-        // Adaugă stratul de hărți de bază (OpenStreetMap)
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
+        let harta;
+        let straziUniceSet = new Set();
+        let straturiLiniiIncarcate = {};
 
-        // Definește poliliniile PRECISE pentru trasee, care urmăresc străzile
-        // Coordonate aproximative, dar care urmează drumurile din imagine
-        var traseuMateiVoievod = L.polyline([
-            [44.4331, 26.1132], // Start
-            [44.4336, 26.1141],
-            [44.4344, 26.1160],
-            [44.4349, 26.1168],
-            [44.4354, 26.1176], // Punct final spre Piața Iancului
-            [44.4361, 26.1189]
-        ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
-
-        var traseuPopaNan = L.polyline([
-            [44.4342, 26.1121], // De la Foișor spre sud
-            [44.4345, 26.1123],
-            [44.4348, 26.1127],
-            [44.4350, 26.1132],
-            [44.4352, 26.1136],
-            [44.4356, 26.1147],
-            [44.4359, 26.1158]  // Sud-est spre Delea veche
-        ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
-
-        var traseuZefirului = L.polyline([
-            [44.4328, 26.1105], // Est din Traian
-            [44.4329, 26.1110],
-            [44.4331, 26.1118],
-            [44.4332, 26.1122],
-            [44.4333, 26.1129]  // Până în Popa Nan
-        ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
-
-        var traseuVișinilor = L.polyline([
-            [44.4320, 26.1100], // Est din Traian
-            [44.4321, 26.1106],
-            [44.4323, 26.1114],
-            [44.4325, 26.1121]  // Până în Popa Nan
-        ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
-
-        // Funcționalitate butoane
-        document.getElementById('btn-cazuri').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Ați apăsat pe "Cazuri Speciale". Aici puteți adăuga logica pentru a afișa cazurile speciale pe hartă.');
+        document.addEventListener("DOMContentLoaded", function() {
+            // Inițializăm harta fix pe zona ta de activitate din București
+            harta = L.map('map').setView([44.4335, 26.1195], 14); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harta);
+            incarcaDateDirect();
         });
 
-        document.getElementById('btn-strazi').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Ați apăsat pe "Toate Străzile". Aici puteți adăuga logica pentru a afișa toate străzile pe hartă.');
-        });
+        // REPARAT: Funcția de verificare parolă și deschidere tabel
+        function deschideCazuriSecurizat() {
+            let introducere = prompt("Introduceți parola pentru a vizualiza cazurile speciale:");
+            if (introducere === parolaCorecta) {
+                deschideFereastra('container-tabel');
+            } else if (introducere !== null) {
+                alert("Parolă incorectă! Accesul a fost refuzat.");
+            }
+        }
 
-        document.getElementById('btn-pagina').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Ați apăsat pe "Pagina Principală". Aici puteți adăuga logica pentru a naviga la pagina principală a aplicației.');
-        });
+        // REPARAT: Funcțiile de comutare ecrane vizuale pentru butoane
+        function deschideFereastra(id) {
+            inchideToate();
+            document.getElementById(id).style.display = 'flex';
+        }
+        function inchideToate() {
+            document.getElementById('container-tabel').style.display = 'none';
+            document.getElementById('container-strazi').style.display = 'none';
+        }
+
+        function incarcaDateDirect() {
+            fetch(urlCsv + "&t=" + new Date().getTime())
+                .then(response => response.text())
+                .then(text => {
+                    proceseazaCsvExcel(text);
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare la citirea datelor.</td></tr>`;
+                });
+        }
+
+        function proceseazaCsvExcel(text) {
+            let randuri = text.split(/\r?\n/);
+            if(randuri.length <= 1) return;
+
+            let antet = randuri[0].split(",").map(h => h.replace(/\s+/g, ' ').trim().toLowerCase());
+            
+            let idxEchipa = antet.findIndex(el => el.includes("echipa"));
+            let idxStrada = antet.findIndex(el => el.includes("strada"));
+
+            // Identificare dinamică a coloanelor indiferent de modificările de structură din formular
+            let indiciCazuri = [];
+            for (let c = 1; c <= 4; c++) {
+                indiciCazuri.push({
+                    idxAddr: antet.findIndex(el => el.includes("nr") && el.includes("adresa") && el.includes(c.toString())),
+                    idxNevoi: antet.findIndex(el => el.includes("descriere") && el.includes("nevoi") && el.includes(c.toString())),
+                    idxObs: antet.findIndex(el => el.includes("observatii") && el.includes(c.toString()))
+                });
+            }
+
+            let corpTabel = document.getElementById('corp-tabel');
+            corpTabel.innerHTML = "";
+            straziUniceSet.clear();
+
+            let areCazuri = false;
+
+            for (let i = 1; i < randuri.length; i++) {
+                if (!randuri[i].trim()) continue;
+                
+                let celule = randuri[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+                
+                let echipa = celule[idxEchipa] || "-";
+                let strada = celule[idxStrada] || "";
+
+                if (!strada || strada.toLowerCase().includes("alege o strada")) continue;
+
+                // Extragere nume curat (elimină sufixul ", Bucuresti, Romania")
+                let numeStradaCurat = strada.split(',')[0].trim();
+                straziUniceSet.add(numeStradaCurat);
+
+                indiciCazuri.forEach(caz => {
+                    if (caz.idxAddr !== -1 && celule[caz.idxAddr]) {
+                        let numarAdresa = celule[caz.idxAddr].trim();
+                        let textNevoi = caz.idxNevoi !== -1 ? celule[caz.idxNevoi].trim() : "";
+                        let textObs = caz.idxObs !== -1 ? celule[caz.idxObs].trim() : "";
+
+                        if (numarAdresa !== "" && numarAdresa !== "-") {
+                            areCazuri = true;
+                            let rand = document.createElement('tr');
+                            rand.innerHTML = `
+                                <td style="font-weight:bold; color:#0056b3;">${echipa}</td>
+                                <td>${numeStradaCurat}, Nr. ${numarAdresa}</td>
+                                <td>${textNevoi || "-"}</td>
+                                <td style="background-color: #fffdf0; font-style: italic;">${textObs || "-"}</td>
+                            `;
+                            corpTabel.appendChild(rand);
+                        }
+                    }
+                });
+            }
+
+            if (!areCazuri) {
+                corpTabel.innerHTML = `<tr><td colspan="4" class="incarcare">Nu sunt cazuri speciale înregistrate.</td></tr>`;
+            }
+
+            popeazaListaStrazi();
+            deseneazaToateTraseelePoligonaleReale();
+        }
+
+        function popeazaListaStrazi() {
+            const containerLista = document.getElementById('lista-strazi-parcurse');
+            containerLista.innerHTML = "";
+
+            if (straziUniceSet.size === 0) {
+                containerLista.innerHTML = `<li class="incarcare">Nicio stradă nu a fost parcursă încă.</li>`;
+                return;
+            }
+
+            let straziSortate = Array.from(straziUniceSet).sort((a, b) => a.localeCompare(b));
+            straziSortate.forEach(strada => {
+                let li = document.createElement('li');
+                li.innerHTML = `<strong>${strada}</strong>`;
+                containerLista.appendChild(li);
+            });
+        }
+
+        // 🧠 REPARAT ȘI ALINIAT: Sistemul GIS trage formele REALE ale străzilor din tabel direct pe drumuri
+        function deseneazaToateTraseelePoligonaleReale() {
+            straziUniceSet.forEach(strada => {
+                if (straturiLiniiIncarcate[strada]) return;
+
+                // Curățare pentru baza de date geografică (Ex: "Strada Popa Nan" -> "Popa Nan")
+                let doarNumele = strada.replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim();
+
+                let queryOverpass = `[out:json][timeout:25];
+                    area["name"="București"]->.searchArea;
+                    (
+                      way["name"~"${doarNumele}", i](area.searchArea);
+                    );
+                    out body; >; out skel qt;`;
+
+                let urlApi = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(queryOverpass);
+
+                fetch(urlApi)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.elements || data.elements.length === 0) return;
+
+                        let noduri = {};
+                        data.elements.forEach(el => {
+                            if (el.type === 'node') {
+                                noduri[el.id] = [el.lat, el.lon];
+                            }
+                        });
+
+                        let liniiStradaGrup = [];
+
+                        data.elements.forEach(el => {
+                            if (el.type === 'way' && el.nodes) {
+                                let puncteTraseuReal = [];
+                                el.nodes.forEach(nodeId => {
+                                    if (noduri[nodeId]) {
+                                        puncteTraseuReal.push(noduri[nodeId]);
+                                    }
+                                });
+
+                                if (puncteTraseuReal.length > 0) {
+                                    // Desenare linie roșie semi-transparentă perfect mulată pe stradă
+                                    let liniePoligonalatransport = L.polyline(puncteTraseuReal, {
+                                        color: '#dc2626',    // Roșu aprins pentru vizibilitate perfectă
+                                        weight: 6,           // Grosime optimă
+                                        opacity: 0.45,       // Transparență perfectă ca să se citească numele străzii dedesubt
+                                        lineJoin: 'round',
+                                        lineCap: 'round'
+                                    }).addTo(harta);
+
+                                    liniePoligonalatransport.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Traseu parcurs!</span>`);
+                                    liniiStradaGrup.push(liniePoligonalatransport);
+                                }
+                            }
+                        });
+
+                        if(liniiStradaGrup.length > 0) {
+                            straturiLiniiIncarcate[strada] = liniiStradaGrup;
+                        }
+                    })
+                    .catch(e => console.error("Eroare la descărcarea geometriei pentru: " + strada, e));
+            });
+        }
     </script>
 </body>
 </html>

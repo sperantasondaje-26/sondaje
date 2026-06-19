@@ -1,208 +1,111 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harta Trasee București</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>Harta Trasee București - Foisor - Delea Veche</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f6f9; }
-        #map { height: 100vh; width: 100vw; z-index: 1; }
-        
-        .grup-butoane {
-            position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 1000;
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 95%; max-width: 600px;
-        }
-        .btn-meniu {
-            background-color: #28a745; color: white; padding: 10px 14px; border: none; border-radius: 20px;
-            font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center;
-            min-width: 110px; flex: 1;
-        }
-        .btn-strazi { background-color: #007bff; }
-        .btn-inapoi { background-color: #343a40; }
+        /* Setează înălțimea completă pentru corp și HTML */
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
 
-        .container-ecran {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: white; z-index: 1050; display: none; flex-direction: column; box-sizing: border-box;
+        /* Container pentru panoul de control */
+        #control-panel {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000; /* Asigură-te că este deasupra hărții */
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .antet-fereastra { padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; display: flex; justify-content: space-between; align-items: center; }
-        .antet-fereastra h2 { margin: 0; font-size: 16px; color: #333; }
-        .btn-inchide { background-color: #dc3545; color: white; border: none; padding: 8px 14px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .zona-scroll { flex: 1; overflow-y: auto; padding: 12px; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { border: 1px solid #dee2e6; padding: 10px 8px; text-align: left; vertical-align: top; }
-        th { background-color: #343a40; color: white; position: sticky; top: 0; }
-        tr:nth-child(even) { background-color: #f8f9fa; }
-        
-        .lista-strazi { list-style-type: none; padding: 0; margin: 0; }
-        .lista-strazi li { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; color: #222; display: flex; align-items: center; gap: 8px; }
-        .lista-strazi li::before { content: "🛣️"; }
-        
-        .incarcare { text-align: center; padding: 30px; font-style: italic; color: #666; }
+
+        /* Stil pentru butoane */
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        /* Culori pentru butoane */
+        .btn-cazuri { background-color: #28a745; } /* Verde */
+        .btn-strazi { background-color: #007bff; } /* Albastru */
+        .btn-pagina { background-color: #343a40; } /* Gri închis */
+
+        /* Efect de hover */
+        .btn:hover { opacity: 0.85; }
+
+        /* Container pentru hartă */
+        #map { height: 100%; width: 100%; z-index: 1; }
     </style>
 </head>
 <body>
 
-    <div class="grup-butoane">
-        <button class="btn-meniu" onclick="deschideCazuriSecurizat()">📋 Cazuri Speciale</button>
-        <button class="btn-meniu btn-strazi" onclick="deschideFereastra('container-strazi')">🚶 Toate Străzile</button>
-        <a href="index.html" class="btn-meniu btn-inapoi">🏠 Pagina Principală</a>
-    </div>
-
-    <div id="container-tabel" class="container-ecran">
-        <div class="antet-fereastra">
-            <h2>📋 Cazuri Speciale Semnalate pe Teren</h2>
-            <button class="btn-inchide" onclick="inchideToate()">✖ Închide</button>
-        </div>
-        <div class="zona-scroll">
-            <table id="tabel-date">
-                <thead>
-                    <tr>
-                        <th>Echipă</th>
-                        <th>Adresă Caz</th>
-                        <th>Interese / Nevoi</th>
-                        <th>Observații</th>
-                    </tr>
-                </thead>
-                <tbody id="corp-tabel">
-                    <tr><td colspan="4" class="incarcare">Se încarcă datele...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="container-strazi" class="container-ecran">
-        <div class="antet-fereastra">
-            <h2>🚶 Listă Străzi Parcurse (Istoric)</h2>
-            <button class="btn-inchide" onclick="inchideToate()">✖ Închide</button>
-        </div>
-        <div class="zona-scroll">
-            <ul id="lista-strazi-parcurse" class="lista-strazi">
-                <li class="incarcare">Se generează lista străzilor...</li>
-            </ul>
-        </div>
+    <div id="control-panel">
+        <a href="#" class="btn btn-cazuri">
+            <span class="icon">📋</span>
+            Cazuri Speciale
+        </a>
+        <a href="#" class="btn btn-strazi">
+            <span class="icon">🏃</span>
+            Toate Străzile
+        </a>
+        <a href="#" class="btn btn-pagina">
+            <span class="icon">🏠</span>
+            Pagina Principală
+        </a>
     </div>
 
     <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
-        const idTabelGoogle = '1O_XyQKzPOYiYGx7RPgJ-s6wl88c-YCmmUDGCf3RkOuQ'; 
-        const urlCsv = `https://docs.google.com/spreadsheets/d/${idTabelGoogle}/export?format=csv&gid=206187394`;
-        const parolaCorecta = 'titughejan@2026';
+        // Inițializează harta și setează centrul și zoom-ul
+        var map = L.map('map').setView([44.4335, 26.1195], 14); // Coordonate pentru Foisorul de Foc, București
 
-        let harta;
-        let straziUniceSet = new Set();
-        let straturiLiniiIncarcate = {};
+        // Adaugă stratul de hărți de bază (OpenStreetMap)
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
-        document.addEventListener("DOMContentLoaded", function() {
-            harta = L.map('map').setView([44.4335, 26.1195], 14); 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harta);
-            incarcaDateDirect();
-        });
+        // Definește poliliniile complexe pentru trasee
+        var line1 = L.polyline([
+            [44.4350, 26.1140],
+            [44.4355, 26.1145],
+            [44.4360, 26.1160],
+            [44.4370, 26.1165],
+            [44.4375, 26.1175]
+        ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
 
-        function deschideCazuriSecurizat() {
-            let introducere = prompt("Introduceți parola pentru a vizualiza cazurile speciale:");
-            if (introducere === parolaCorecta) {
-                deschideFereastra('container-tabel');
-            } else if (introducere !== null) {
-                alert("Parolă incorectă! Accesul a fost refuzat.");
-            }
-        }
+        var line2 = L.polyline([
+            [44.4310, 26.1110],
+            [44.4315, 26.1115],
+            [44.4320, 26.1125],
+            [44.4330, 26.1130]
+        ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
 
-        function deschideFereastra(id) {
-            inchideToate();
-            document.getElementById(id).style.display = 'flex';
-        }
-        function inchideToate() {
-            document.getElementById('container-tabel').style.display = 'none';
-            document.getElementById('container-strazi').style.display = 'none';
-        }
+        var line3 = L.polyline([
+            [44.4340, 26.1070],
+            [44.4345, 26.1075],
+            [44.4350, 26.1085],
+            [44.4360, 26.1090],
+            [44.4365, 26.1100]
+        ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
 
-        function incarcaDateDirect() {
-            fetch(urlCsv + "&t=" + new Date().getTime())
-                .then(response => response.text())
-                .then(text => {
-                    proceseazaCsvExcel(text);
-                })
-                .catch(err => {
-                    console.error(err);
-                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare la citirea datelor.</td></tr>`;
-                });
-        }
-
-        // FNCȚIE AJUTĂTOARE: Curăță un string de diacritice
-        function eliminaDiacriticele(text) {
-            return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        }
-
-        function proceseazaCsvExcel(text) {
-            let randuri = text.split(/\r?\n/);
-            if(randuri.length <= 1) return;
-
-            // Curățăm antetul: scoatem spațiile și facem totul litere mici
-            let antetRaw = randuri[0].split(",");
-            let antet = antetRaw.map(h => eliminaDiacriticele(h.replace(/\s+/g, '').trim().toLowerCase()));
-            
-            // Mapare indici conform coloanelor din Google Sheets (imaginea 4)
-            // Coloana C = 'alege strada', Coloana B = 'echipa ta', etc.
-            let idxEchipa = antetRaw.findIndex(el => /echipa/i.test(el));
-            let idxStrada = antetRaw.findIndex(el => /alege.*strada/i.test(el));
-            
-            // Coloana E = 'nr adresa caz 1', F = 'descriere nevoi caz 1', etc.
-            let idxCazNr1 = antetRaw.findIndex(el => /nr.*adresa.*caz.*1/i.test(el));
-            let idxCazNevoi1 = antetRaw.findIndex(el => /descriere.*nevoi.*caz.*1/i.test(el));
-            
-            // Același lucru pentru cazurile 2 și 3
-            let idxCazNr2 = antetRaw.findIndex(el => /nr.*adresa.*caz.*2/i.test(el));
-            let idxCazNevoi2 = antetRaw.findIndex(el => /descriere.*nevoi.*caz.*2/i.test(el));
-            let idxCazObs2 = antetRaw.findIndex(el => /observatii.*2/i.test(el)); // Coloana H
-
-            let idxCazNr3 = antetRaw.findIndex(el => /nr.*adresa.*caz.*3/i.test(el));
-
-            let corpTabel = document.getElementById('corp-tabel');
-            corpTabel.innerHTML = "";
-            straziUniceSet.clear();
-
-            let areCazuri = false;
-
-            for (let i = 1; i < randuri.length; i++) {
-                if (!randuri[i].trim()) continue;
-                
-                let celule = randuri[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
-                
-                let echipa = celule[idxEchipa] || "-";
-                let strada = celule[idxStrada] || "";
-
-                if (!strada || strada.toLowerCase().includes("alege o strada")) continue;
-
-                // Curățăm numele străzii pentru a-l afișa frumos în listă
-                let numeStradaFrumos = strada.split(',')[0].trim();
-                straziUniceSet.add(numeStradaFrumos);
-
-                // Verificăm dacă există cazuri speciale pe acest rând (pe oricare din cele 3 seturi de coloane)
-                let dateCazuriPeRand = [];
-                
-                // Set 1
-                if (idxCazNr1 !== -1 && celule[idxCazNr1] && celule[idxCazNr1] !== "-") {
-                    dateCazuriPeRand.push({ nr: celule[idxCazNr1], nevoi: celule[idxCazNevoi1], obs: "" });
-                }
-                // Set 2
-                if (idxCazNr2 !== -1 && celule[idxCazNr2] && celule[idxCazNr2] !== "-") {
-                    dateCazuriPeRand.push({ nr: celule[idxCazNr2], nevoi: celule[idxCazNevoi2], obs: celule[idxCazObs2] });
-                }
-                // Set 3
-                if (idxCazNr3 !== -1 && celule[idxCazNr3] && celule[idxCazNr3] !== "-") {
-                    // Avem doar NR pentru setul 3 în imagine, nu și nevoi
-                    dateCazuriPeRand.push({ nr: celule[idxCazNr3], nevoi: "", obs: "" });
-                }
-
-                // Dacă am găsit cel puțin un caz pe rând, îl adăugăm în tabelul ascuns
-                if (dateCazuriPeRand.length > 0) {
-                    areCazuri = true;
-                    dateCazuriPeRand.forEach(caz => {
-                        let rand = document.createElement('tr');
-                        rand.innerHTML = `
-                            <td style="font-weight:bold; color:#0056b3;">${echipa}
+        // Adaugă alte polilinii după cum este necesar
+    </script>
+</body>
+</html>

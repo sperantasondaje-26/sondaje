@@ -136,7 +136,7 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare de conexiune la baza de date.</td></tr>`;
+                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare de rețea.</td></tr>`;
                 });
         }
 
@@ -160,15 +160,12 @@
             corpTabel.innerHTML = "";
             straziUniceSet.clear();
 
-            let areCazuri = false;
-
             obiecteRanduri.forEach(randDate => {
                 let echipa = randDate[colEchipa] || "-";
                 let stradaRaw = randDate[colStrada] || "";
 
                 if (!stradaRaw || stradaRaw.toLowerCase().includes("alege o strada") || stradaRaw === "-") return;
 
-                // Salvează numele exact așa cum vine din tabel (Ex: "Intrare Kiritescu, Bucuresti")
                 let numeStradaCurat = stradaRaw.split(',')[0].trim();
                 if (numeStradaCurat) {
                     straziUniceSet.add(numeStradaCurat);
@@ -186,7 +183,6 @@
                 }
 
                 if (arrayCazuri.length > 0) {
-                    areCazuri = true;
                     arrayCazuri.forEach(caz => {
                         let tr = document.createElement('tr');
                         tr.innerHTML = `
@@ -199,10 +195,6 @@
                     });
                 }
             });
-
-            if (!areCazuri) {
-                corpTabel.innerHTML = `<tr><td colspan="4" class="incarcare">Nu sunt cazuri speciale înregistrate.</td></tr>`;
-            }
 
             popeazaListaStrazi();
             deseneazaToateTraseelePoligonaleReale();
@@ -229,9 +221,10 @@
             straziUniceSet.forEach(strada => {
                 if (straturiLiniiIncarcate[strada]) return;
 
-                // Curățare corectă a cuvintelor descriptive pentru interogarea Overpass API
+                // Curățăm cuvintele de legătură (Ex: "Strada Stefan Mihaileanu" devine "Stefan Mihaileanu")
                 let doarNumele = strada.replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim();
 
+                // 🧠 LOGICĂ CORECTATĂ: Folosim [name~"...", i] care ignoră diferențele de diacritice și litere mari/mici
                 let queryOverpass = `[out:json][timeout:25];
                     area["name"="București"]->.searchArea;
                     (
@@ -265,17 +258,16 @@
                                 });
 
                                 if (puncteTraseuReal.length > 0) {
-                                    // 🌟 REPARAT ABSOLUT: L.polyline este definit curat, culoarea este albastră și se mulează fix pe drum
-                                    let liniePoligonală = L.polyline(puncteTraseuReal, {
-                                        color: '#0056b3',    // Albastru intens, vizibil și foarte elegant
-                                        weight: 6,           // Grosime optimă
-                                        opacity: 0.6,        // Semi-transparent ca să se citească numele străzii dedesubt
+                                    let liniePoligonala = L.polyline(puncteTraseuReal, {
+                                        color: '#0056b3',    // Albastru intens
+                                        weight: 6,           
+                                        opacity: 0.6,       
                                         lineJoin: 'round',
                                         lineCap: 'round'
                                     }).addTo(harta);
 
-                                    liniePoligonală.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:blue;font-weight:bold;">Traseu corelat din Sheets!</span>`);
-                                    liniiStradaGrup.push(liniePoligonală);
+                                    liniePoligonala.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:blue;font-weight:bold;">Traseu mapat cu succes!</span>`);
+                                    liniiStradaGrup.push(liniePoligonalatransport = liniePoligonala);
                                 }
                             }
                         });

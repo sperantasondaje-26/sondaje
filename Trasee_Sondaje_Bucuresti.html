@@ -133,18 +133,34 @@
                 });
         }
 
+        // FNCȚIE AJUTĂTOARE: Curăță un string de diacritice
+        function eliminaDiacriticele(text) {
+            return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
         function proceseazaCsvExcel(text) {
             let randuri = text.split(/\r?\n/);
             if(randuri.length <= 1) return;
 
-            let antet = randuri[0].split(",").map(h => h.replace(/\s+/g, ' ').trim().toLowerCase());
+            // Curățăm antetul: scoatem spațiile și facem totul litere mici
+            let antetRaw = randuri[0].split(",");
+            let antet = antetRaw.map(h => eliminaDiacriticele(h.replace(/\s+/g, '').trim().toLowerCase()));
             
-            // Mapare indici conform noului formular Apps Script
-            let idxEchipa = antet.findIndex(el => el.includes("echipa"));
-            let idxStrada = antet.findIndex(el => el.includes("strada"));
-            let idxCazNr = antet.findIndex(el => el.includes("nr") || el.includes("adresa"));
-            let idxCazNevoi = antet.findIndex(el => el.includes("nevoi") || el.includes("interese"));
-            let idxCazObs = antet.findIndex(el => el.includes("observatii"));
+            // Mapare indici conform coloanelor din Google Sheets (imaginea 4)
+            // Coloana C = 'alege strada', Coloana B = 'echipa ta', etc.
+            let idxEchipa = antetRaw.findIndex(el => /echipa/i.test(el));
+            let idxStrada = antetRaw.findIndex(el => /alege.*strada/i.test(el));
+            
+            // Coloana E = 'nr adresa caz 1', F = 'descriere nevoi caz 1', etc.
+            let idxCazNr1 = antetRaw.findIndex(el => /nr.*adresa.*caz.*1/i.test(el));
+            let idxCazNevoi1 = antetRaw.findIndex(el => /descriere.*nevoi.*caz.*1/i.test(el));
+            
+            // Același lucru pentru cazurile 2 și 3
+            let idxCazNr2 = antetRaw.findIndex(el => /nr.*adresa.*caz.*2/i.test(el));
+            let idxCazNevoi2 = antetRaw.findIndex(el => /descriere.*nevoi.*caz.*2/i.test(el));
+            let idxCazObs2 = antetRaw.findIndex(el => /observatii.*2/i.test(el)); // Coloana H
+
+            let idxCazNr3 = antetRaw.findIndex(el => /nr.*adresa.*caz.*3/i.test(el));
 
             let corpTabel = document.getElementById('corp-tabel');
             corpTabel.innerHTML = "";
@@ -162,113 +178,31 @@
 
                 if (!strada || strada.toLowerCase().includes("alege o strada")) continue;
 
-                let numeStradaCurat = strada.split(',')[0].trim();
-                straziUniceSet.add(numeStradaCurat);
+                // Curățăm numele străzii pentru a-l afișa frumos în listă
+                let numeStradaFrumos = strada.split(',')[0].trim();
+                straziUniceSet.add(numeStradaFrumos);
 
-                // Verificăm dacă există caz special completat pe acest rând
-                let nrAdresa = idxCazNr !== -1 ? celule[idxCazNr] : "";
-                let nevoi = idxCazNevoi !== -1 ? celule[idxCazNevoi] : "";
-                let observatii = idxCazObs !== -1 ? celule[idxCazObs] : "";
-
-                if (nrAdresa && nrAdresa !== "-" && nrAdresa.trim() !== "") {
-                    areCazuri = true;
-                    let rand = document.createElement('tr');
-                    rand.innerHTML = `
-                        <td style="font-weight:bold; color:#0056b3;">${echipa}</td>
-                        <td>${numeStradaCurat}, ${nrAdresa}</td>
-                        <td>${nevoi || "-"}</td>
-                        <td style="background-color: #fffdf0; font-style: italic;">${observatii || "-"}</td>
-                    `;
-                    corpTabel.appendChild(rand);
+                // Verificăm dacă există cazuri speciale pe acest rând (pe oricare din cele 3 seturi de coloane)
+                let dateCazuriPeRand = [];
+                
+                // Set 1
+                if (idxCazNr1 !== -1 && celule[idxCazNr1] && celule[idxCazNr1] !== "-") {
+                    dateCazuriPeRand.push({ nr: celule[idxCazNr1], nevoi: celule[idxCazNevoi1], obs: "" });
                 }
-            }
+                // Set 2
+                if (idxCazNr2 !== -1 && celule[idxCazNr2] && celule[idxCazNr2] !== "-") {
+                    dateCazuriPeRand.push({ nr: celule[idxCazNr2], nevoi: celule[idxCazNevoi2], obs: celule[idxCazObs2] });
+                }
+                // Set 3
+                if (idxCazNr3 !== -1 && celule[idxCazNr3] && celule[idxCazNr3] !== "-") {
+                    // Avem doar NR pentru setul 3 în imagine, nu și nevoi
+                    dateCazuriPeRand.push({ nr: celule[idxCazNr3], nevoi: "", obs: "" });
+                }
 
-            if (!areCazuri) {
-                corpTabel.innerHTML = `<tr><td colspan="4" class="incarcare">Nu sunt cazuri speciale înregistrate.</td></tr>`;
-            }
-
-            popeazaListaStrazi();
-            deseneazaToateTraseelePoligonaleReale();
-        }
-
-        function popeazaListaStrazi() {
-            const containerLista = document.getElementById('lista-strazi-parcurse');
-            containerLista.innerHTML = "";
-
-            if (straziUniceSet.size === 0) {
-                containerLista.innerHTML = `<li class="incarcare">Nicio stradă nu a fost parcursă încă.</li>`;
-                return;
-            }
-
-            let straziSortate = Array.from(straziUniceSet).sort((a, b) => a.localeCompare(b));
-            straziSortate.forEach(strada => {
-                let li = document.createElement('li');
-                li.innerHTML = `<strong>${strada}</strong>`;
-                containerLista.appendChild(li);
-            });
-        }
-
-        function deseneazaToateTraseelePoligonaleReale() {
-            straziUniceSet.forEach(strada => {
-                if (straturiLiniiIncarcate[strada]) return;
-
-                // Curățare optimizată pentru API-ul Overpass (Ex: "Strada Labirint" devine "Labirint")
-                let doarNumele = strada.replace(/strada\s+|bulevardul\s+|calea\s+|intrare\s+|aleea\s+/i, '').trim();
-
-                let queryOverpass = `[out:json][timeout:25];
-                    area["name"="București"]->.searchArea;
-                    (
-                      way["name"~"${doarNumele}", i](area.searchArea);
-                    );
-                    out body; >; out skel qt;`;
-
-                let urlApi = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(queryOverpass);
-
-                fetch(urlApi)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.elements || data.elements.length === 0) return;
-
-                        let noduri = {};
-                        data.elements.forEach(el => {
-                            if (el.type === 'node') {
-                                noduri[el.id] = [el.lat, el.lon];
-                            }
-                        });
-
-                        let liniiStradaGrup = [];
-
-                        data.elements.forEach(el => {
-                            if (el.type === 'way' && el.nodes) {
-                                let puncteTraseuReal = [];
-                                el.nodes.forEach(nodeId => {
-                                    if (noduri[nodeId]) {
-                                        puncteTraseuReal.push(noduri[nodeId]);
-                                    }
-                                });
-
-                                if (puncteTraseuReal.length > 0) {
-                                    let liniePoligonalatransport = L.polyline(puncteTraseuReal, {
-                                        color: '#dc2626',    // Roșu aprins
-                                        weight: 6,           // Grosime vizibilă pe mobil
-                                        opacity: 0.45,       // Semi-transparent să se vadă numele străzii sub linie
-                                        lineJoin: 'round',
-                                        lineCap: 'round'
-                                    }).addTo(harta);
-
-                                    liniePoligonalatransport.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Traseu parcurs corect!</span>`);
-                                    liniiStradaGrup.push(liniePoligonalatransport);
-                                }
-                            }
-                        });
-
-                        if(liniiStradaGrup.length > 0) {
-                            straturiLiniiIncarcate[strada] = liniiStradaGrup;
-                        }
-                    })
-                    .catch(e => console.error("Eroare la descărcarea geometriei pentru: " + strada, e));
-            });
-        }
-    </script>
-</body>
-</html>
+                // Dacă am găsit cel puțin un caz pe rând, îl adăugăm în tabelul ascuns
+                if (dateCazuriPeRand.length > 0) {
+                    areCazuri = true;
+                    dateCazuriPeRand.forEach(caz => {
+                        let rand = document.createElement('tr');
+                        rand.innerHTML = `
+                            <td style="font-weight:bold; color:#0056b3;">${echipa}

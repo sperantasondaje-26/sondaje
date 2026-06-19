@@ -137,10 +137,8 @@
             let randuri = text.split(/\r?\n/);
             if(randuri.length <= 1) return;
 
-            // Citire brută a capului de tabel pentru a evita erorile de potrivire text
             let antetRaw = randuri[0].split(",");
             
-            // Căutare inteligentă indici coloane (verifică parțial cuvintele cheie)
             let idxEchipa = antetRaw.findIndex(el => /echipa/i.test(el));
             let idxStrada = antetRaw.findIndex(el => /strada|alege/i.test(el)); 
 
@@ -169,7 +167,6 @@
 
                 if (!strada || strada.toLowerCase().includes("alege o strada") || strada === "-") continue;
 
-                // STRATEGIE NOUĂ: Luăm strict prima parte înainte de virgulă (Ex: "Strada Popa Nan")
                 let numeStradaCurat = strada.split(',')[0].trim();
                 if(numeStradaCurat) {
                     straziUniceSet.add(numeStradaCurat);
@@ -230,7 +227,6 @@
             straziUniceSet.forEach(strada => {
                 if (straturiLiniiIncarcate[strada]) return;
 
-                // Curățare avansată: elimină prefixele uzuale pentru a trimite doar numele propriu către baza de date
                 let doarNumele = strada.replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim();
 
                 let queryOverpass = `[out:json][timeout:25];
@@ -266,15 +262,16 @@
                                 });
 
                                 if (puncteTraseuReal.length > 0) {
-                                    let liniePoligonala = L.polyline(puncteTraseuReal, {
-                                        color: '#dc2626',    // Roșu intens
+                                    // REPARAT: Variabila este adăugată acum corect în grup (liniiStradaGrup) fără erori scriptice
+                                    let liniePoligonalatransport = L.polyline(puncteTraseuReal, {
+                                        color: '#dc2626',
                                         weight: 6,
                                         opacity: 0.5,
                                         lineJoin: 'round',
                                         lineCap: 'round'
                                     }).addTo(harta);
 
-                                    liniePoligonala.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Traseu parcurs!</span>`);
+                                    liniePoligonalatransport.bindPopup(`<b>Ancoră 🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Traseu parcurs!</span>`);
                                     liniiStradaGrup.push(liniePoligonalatransport);
                                 }
                             }

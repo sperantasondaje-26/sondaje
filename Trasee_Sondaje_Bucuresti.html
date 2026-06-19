@@ -95,11 +95,12 @@
 
         let harta;
         let straziUniceSet = new Set();
+        let liniiHartaGrup = [];
 
-        // 🛣️ TRASEE POLIGONALE PRECISE CE URMEAZĂ STRĂZILE STRAT CUSTOALE DIN BUCUREȘTI
+        // 🛣️ COORDONATE ULTRA-PRECISE PENTRU URMAREA FIDELĂ A ȘOSELEI
         const traseeStraziLinii = {
             "strada popa nan": [
-                [44.43444, 26.12196], [44.43542, 26.12242], [44.43632, 26.12282], 
+                [44.43402, 26.12175], [44.43472, 26.12211], [44.43573, 26.12255], 
                 [44.43695, 26.12311], [44.43851, 26.12384], [44.44105, 26.12502]
             ],
             "strada traian": [
@@ -179,7 +180,7 @@
         };
 
         document.addEventListener("DOMContentLoaded", function() {
-            harta = L.map('map').setView([44.4335, 26.1195], 14); // Zoom potrivit direct pe zona de acțiune din poză
+            harta = L.map('map').setView([44.4335, 26.1195], 14); 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harta);
             incarcaDateDirect();
         });
@@ -203,7 +204,7 @@
         }
 
         function incarcaDateDirect() {
-            fetch(urlCsv)
+            fetch(urlCsv + "&t=" + new Date().getTime()) // Ocolim memoria cache forțând reîncărcarea scriptului
                 .then(response => response.text())
                 .then(text => {
                     proceseazaCsvExcel(text);
@@ -248,8 +249,9 @@
 
                 if (!strada || strada.toLowerCase().includes("alege o strada")) continue;
 
-                let stradaCurata = strada.replace(/,?\s*bucuresti.*$/i, '').trim();
-                straziUniceSet.add(stradaCurata);
+                // Curățare agresivă a textului ca să găsească potrivirea indiferent de diacritice sau spații
+                let stradaCurata = strada.split(',')[0].replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim().toLowerCase();
+                straziUniceSet.add(strada.split(',')[0].trim());
 
                 indiciCazuri.forEach(caz => {
                     if (caz.idxAddr !== -1 && celule[caz.idxAddr]) {
@@ -262,7 +264,7 @@
                             let rand = document.createElement('tr');
                             rand.innerHTML = `
                                 <td style="font-weight:bold; color:#0056b3;">${echipa}</td>
-                                <td>${stradaCurata}, Nr. ${numarAdresa}</td>
+                                <td>${strada.split(',')[0].trim()}, Nr. ${numarAdresa}</td>
                                 <td>${textNevoi || "-"}</td>
                                 <td style="background-color: #fffdf0; font-style: italic;">${textObs || "-"}</td>
                             `;
@@ -298,27 +300,30 @@
         }
 
         function deseneazaLiniiPoligonalePrecise() {
-            // Curățăm marcajele vechi de tip linie pentru a redesena curat
-            harta.eachLayer(function (layer) {
-                if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-                    harta.removeLayer(layer);
-                }
-            });
+            // Ștergem complet liniile din sesiunea anterioară ca să nu se suprapună
+            liniiHartaGrup.forEach(linie => harta.removeLayer(linie));
+            liniiHartaGrup = [];
 
             straziUniceSet.forEach(strada => {
-                let cheieCautare = strada.toLowerCase().trim();
+                // Curățăm numele străzii pentru căutarea în dicționar
+                let cheieCautare = strada.toLowerCase().replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim();
                 
-                if (traseeStraziLinii[cheieCautare]) {
-                    let punctePoligonale = traseeStraziLinii[cheieCautare];
+                // Căutăm o potrivire parțială în baza de date geometrică
+                let cheieGasita = Object.keys(traseeStraziLinii).find(k => k.includes(cheieCautare) || cheieCautare.includes(k));
+                
+                if (cheieGasita) {
+                    let punctePoligonale = traseeStraziLinii[cheieGasita];
                     
-                    // Desenăm linia poligonală care se mulează perfect pe traseul străzii
-                    L.polyline(punctePoligonale, {
-                        color: '#0056b3', // Albastru intens
-                        weight: 6,        // Grosime optimă pentru străzi pe telefon
-                        opacity: 0.85,
-                        lineJoin: 'round', // Rotunjește colțurile la intersecții pentru aspect fluid
+                    let linieNoua = L.polyline(punctePoligonale, {
+                        color: '#1d4ed8', // Albastru intens, vizibil la soare
+                        weight: 8,        // Linie mai groasă, perfect vizibilă pe stradă
+                        opacity: 0.9,
+                        lineJoin: 'round',
                         lineCap: 'round'
-                    }).addTo(harta).bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Stradă parcursă!</span>`);
+                    }).addTo(harta);
+                    
+                    linieNoua.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Stradă parcursă!</span>`);
+                    liniiHartaGrup.push(linieNoua);
                 }
             });
         }

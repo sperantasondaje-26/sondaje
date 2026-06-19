@@ -224,12 +224,11 @@
             });
         }
 
-        // 🧠 REVENIRE LA SOLUȚIA INTELIGENTĂ: Satelitul desenează live formele corecte, direct pe drum
         function deseneazaToateTraseelePoligonaleReale() {
             straziUniceSet.forEach(strada => {
                 if (straturiLiniiIncarcate[strada]) return;
 
-                // Curăță cuvintele ajutătoare pentru a trimite interogarea curată (ex: "Stefan Mihaileanu")
+                // Curățare inteligentă a prefixelor comune pentru interogarea Overpass
                 let doarNumele = strada.replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim();
 
                 let queryOverpass = `[out:json][timeout:25];
@@ -265,17 +264,18 @@
                                 });
 
                                 if (puncteTraseuReal.length > 0) {
-                                    // Linie roșie semi-transparentă care merge STRICT pe stradă, nu prin case
-                                    let liniePoligonalatransport = L.polyline(puncteTraseuReal, {
-                                        color: '#dc2626',    // Roșu aprins, excelent la lumina zilei
-                                        weight: 6,           // Grosime perfectă
-                                        opacity: 0.45,       // Se vede textul străzii dedesubt
+                                    // CORECTAT: L.polyline corect tehnic, culoare albastră fidelă drumului
+                                    let liniePoligonala = L.polyline(puncteTraseuReal, {
+                                        color: '#007bff',    // Albastru intens, curat
+                                        weight: 6,           
+                                        opacity: 0.6,       
                                         lineJoin: 'round',
                                         lineCap: 'round'
                                     }).addTo(harta);
 
-                                    liniePoligonalatransport.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Traseu corelat geografic!</span>`);
-                                    liniiStradaGrup.push(liniePoligonalatransport);
+                                    liniePoligonalatransport = liniePoligonala; // Siguranță referință
+                                    liniePoligonala.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:blue;font-weight:bold;">Traseu marcat!</span>`);
+                                    liniiStradaGrup.push(liniePoligonala);
                                 }
                             }
                         });

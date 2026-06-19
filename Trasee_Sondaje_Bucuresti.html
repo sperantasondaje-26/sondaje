@@ -219,42 +219,29 @@
             });
         }
 
-        // Funcția nouă care elimină pinii și desenează străzile evidențiate ca linii (polylines)
         function evidentiazaStraziPeHarta() {
-            let strazi Array = Array.from(straziUniceSet);
+            let straziArray = Array.from(straziUniceSet);
             
             straziArray.forEach((strada, index) => {
-                // Interogăm serviciul Nominatim pentru a găsi traseul/forma străzii în București
                 setTimeout(() => {
-                    let urlCautare = `https://nominatim.openstreetmap.org/search?street=${encodeURIComponent(strada)}&city=Bucuresti&country=Romania&format=json&polygon_geojson=1`;
+                    let urlCautare = `https://nominatim.openstreetmap.org/search?street=${encodeURIComponent(strada)}&city=Bucuresti&country=Romania&format=json`;
                     
                     fetch(urlCautare)
                         .then(res => res.json())
                         .then(date => {
                             if (date && date.length > 0) {
                                 let element = date[0];
-                                
-                                // Dacă Nominatim ne returnează structura geometrică a străzii (linie/traseu)
-                                if (element.geojson && (element.geojson.type === "LineString" || element.geojson.type === "MultiLineString")) {
-                                    L.geoJSON(element.geojson, {
-                                        style: {
-                                            color: '#007bff', // Albastru pentru evidențiere traseu
-                                            weight: 6,        // Grosimea liniei pe stradă
-                                            opacity: 0.75
-                                        }
-                                    }).addTo(harta).bindPopup(`<b>${strada}</b><br>Stradă parcursă`);
-                                } else {
-                                    // Alternativă: dacă nu avem traseul complet, marcăm un cerc discret de control pe mijlocul străzii
-                                    L.circle([parseFloat(element.lat), parseFloat(element.lon)], {
-                                        color: '#343a40',
-                                        fillColor: '#007bff',
-                                        fillOpacity: 0.5,
-                                        radius: 40
-                                    }).addTo(harta).bindPopup(`<b>${strada}</b>`);
-                                }
+                                // Plasează un punct/indicator albastru discret pe hartă în mijlocul străzii parcurse
+                                L.circleMarker([parseFloat(element.lat), parseFloat(element.lon)], {
+                                    radius: 10,
+                                    color: '#0056b3',
+                                    fillColor: '#007bff',
+                                    fillOpacity: 0.8,
+                                    weight: 2
+                                }).addTo(harta).bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Sector parcurs!</span>`);
                             }
                         }).catch(e => console.error("Eroare geocodare pentru: " + strada, e));
-                }, index * 300); // Delay mic de siguranță pentru a nu bloca serverul de hărți la cereri multiple
+                }, index * 300); 
             });
         }
     </script>

@@ -1,9 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harta Trasee București - Foisor - Delea Veche</title>
+    <title>Harta Trasee București - Foișor - Delea Veche - REPARAT</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
         /* Setează înălțimea completă pentru corp și HTML */
@@ -19,9 +19,9 @@
             display: flex;
             gap: 10px;
             padding: 10px;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9); /* Mai puțin transparent */
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         /* Stil pentru butoane */
@@ -29,14 +29,15 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            padding: 10px 15px;
+            padding: 12px 18px; /* Mai mari */
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             color: white;
             font-weight: bold;
+            font-size: 14px;
             text-decoration: none;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.1s;
         }
 
         /* Culori pentru butoane */
@@ -45,7 +46,10 @@
         .btn-pagina { background-color: #343a40; } /* Gri închis */
 
         /* Efect de hover */
-        .btn:hover { opacity: 0.85; }
+        .btn:hover { opacity: 0.9; }
+
+        /* Efect de click */
+        .btn:active { transform: translateY(1px); }
 
         /* Container pentru hartă */
         #map { height: 100%; width: 100%; z-index: 1; }
@@ -54,15 +58,15 @@
 <body>
 
     <div id="control-panel">
-        <a href="#" class="btn btn-cazuri">
+        <a href="#" class="btn btn-cazuri" id="btn-cazuri">
             <span class="icon">📋</span>
             Cazuri Speciale
         </a>
-        <a href="#" class="btn btn-strazi">
+        <a href="#" class="btn btn-strazi" id="btn-strazi">
             <span class="icon">🏃</span>
             Toate Străzile
         </a>
-        <a href="#" class="btn btn-pagina">
+        <a href="#" class="btn btn-pagina" id="btn-pagina">
             <span class="icon">🏠</span>
             Pagina Principală
         </a>
@@ -81,31 +85,57 @@
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        // Definește poliliniile complexe pentru trasee
-        var line1 = L.polyline([
-            [44.4350, 26.1140],
-            [44.4355, 26.1145],
-            [44.4360, 26.1160],
-            [44.4370, 26.1165],
-            [44.4375, 26.1175]
+        // Definește poliliniile PRECISE pentru trasee, care urmăresc străzile
+        // Coordonate aproximative, dar care urmează drumurile din imagine
+        var traseuMateiVoievod = L.polyline([
+            [44.4331, 26.1132], // Start
+            [44.4336, 26.1141],
+            [44.4344, 26.1160],
+            [44.4349, 26.1168],
+            [44.4354, 26.1176], // Punct final spre Piața Iancului
+            [44.4361, 26.1189]
         ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
 
-        var line2 = L.polyline([
-            [44.4310, 26.1110],
-            [44.4315, 26.1115],
-            [44.4320, 26.1125],
-            [44.4330, 26.1130]
+        var traseuPopaNan = L.polyline([
+            [44.4342, 26.1121], // De la Foișor spre sud
+            [44.4345, 26.1123],
+            [44.4348, 26.1127],
+            [44.4350, 26.1132],
+            [44.4352, 26.1136],
+            [44.4356, 26.1147],
+            [44.4359, 26.1158]  // Sud-est spre Delea veche
         ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
 
-        var line3 = L.polyline([
-            [44.4340, 26.1070],
-            [44.4345, 26.1075],
-            [44.4350, 26.1085],
-            [44.4360, 26.1090],
-            [44.4365, 26.1100]
+        var traseuZefirului = L.polyline([
+            [44.4328, 26.1105], // Est din Traian
+            [44.4329, 26.1110],
+            [44.4331, 26.1118],
+            [44.4332, 26.1122],
+            [44.4333, 26.1129]  // Până în Popa Nan
         ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
 
-        // Adaugă alte polilinii după cum este necesar
+        var traseuVișinilor = L.polyline([
+            [44.4320, 26.1100], // Est din Traian
+            [44.4321, 26.1106],
+            [44.4323, 26.1114],
+            [44.4325, 26.1121]  // Până în Popa Nan
+        ], {color: 'blue', weight: 6, opacity: 0.6}).addTo(map);
+
+        // Funcționalitate butoane
+        document.getElementById('btn-cazuri').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Ați apăsat pe "Cazuri Speciale". Aici puteți adăuga logica pentru a afișa cazurile speciale pe hartă.');
+        });
+
+        document.getElementById('btn-strazi').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Ați apăsat pe "Toate Străzile". Aici puteți adăuga logica pentru a afișa toate străzile pe hartă.');
+        });
+
+        document.getElementById('btn-pagina').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Ați apăsat pe "Pagina Principală". Aici puteți adăuga logica pentru a naviga la pagina principală a aplicației.');
+        });
     </script>
 </body>
 </html>

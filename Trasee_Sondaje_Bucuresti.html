@@ -216,16 +216,12 @@
             });
         }
 
-        // 🧠 SISTEM AUTOMAT GIS PENTRU DESCARCAREA POLIGOANELOR REALE DE PE STRĂZI
         function deseneazaToateTraseelePoligonaleReale() {
             straziUniceSet.forEach(strada => {
-                // Dacă strada este deja desenată corect, nu o mai descărcăm o dată
                 if (straturiLiniiIncarcate[strada]) return;
 
-                // Eliminăm cuvintele administrative pentru căutarea în baza de date geografică
                 let doarNumele = strada.replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim();
 
-                // Construim interogarea Overpass API pentru București
                 let queryOverpass = `[out:json][timeout:25];
                     area["name"="București"]->.searchArea;
                     (
@@ -240,7 +236,6 @@
                     .then(data => {
                         if (!data.elements || data.elements.length === 0) return;
 
-                        // Mapăm punctele din baza de date
                         let noduri = {};
                         data.elements.forEach(el => {
                             if (el.type === 'node') {
@@ -260,16 +255,17 @@
                                 });
 
                                 if (puncteTraseuReal.length > 0) {
-                                    // Desenăm linia poligonală reală din satelit a străzii
+                                    // 👁️ LINIE MODIFICATĂ: Albastru deschis, semi-transparent (opacity: 0.4) 
+                                    // textul străzii de pe fundal rămâne perfect lizibil
                                     let liniePoligonalatransport = L.polyline(puncteTraseuReal, {
-                                        color: '#1d4ed8', // Albastru intens
-                                        weight: 7,        // Se așază perfect pe stradă
-                                        opacity: 0.85,
+                                        color: '#0284c7',    // Un albastru-azuriu curat
+                                        weight: 5,           // Grosime redusă ca să nu acopere textul complet
+                                        opacity: 0.4,        // Transparență ridicată
                                         lineJoin: 'round',
                                         lineCap: 'round'
                                     }).addTo(harta);
 
-                                    liniePoligonalatransport.bindPopup(`<b>¼️ ${strada}</b><br><span style="color:green;font-weight:bold;">Traseu parcurs corect!</span>`);
+                                    liniePoligonalatransport.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Traseu parcurs corect!</span>`);
                                     liniiStradaGrup.push(liniePoligonalatransport);
                                 }
                             }

@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
@@ -255,12 +255,11 @@
                                 });
 
                                 if (puncteTraseuReal.length > 0) {
-                                    // 👁️ LINIE MODIFICATĂ: Albastru deschis, semi-transparent (opacity: 0.4) 
-                                    // textul străzii de pe fundal rămâne perfect lizibil
+                                    // 🔴 LINIE MODIFICATĂ: Roșu aprins, semi-transparent (opacity: 0.45)
                                     let liniePoligonalatransport = L.polyline(puncteTraseuReal, {
-                                        color: '#0284c7',    // Un albastru-azuriu curat
-                                        weight: 5,           // Grosime redusă ca să nu acopere textul complet
-                                        opacity: 0.4,        // Transparență ridicată
+                                        color: '#dc2626',    // Roșu aprins, excelent pentru contrast la lumină naturală
+                                        weight: 6,           // Grosime optimizată
+                                        opacity: 0.45,       // Transparență echilibrată
                                         lineJoin: 'round',
                                         lineCap: 'round'
                                     }).addTo(harta);

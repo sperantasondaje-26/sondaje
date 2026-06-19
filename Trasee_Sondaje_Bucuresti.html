@@ -97,71 +97,69 @@
         let straziUniceSet = new Set();
         let vectorLiniiInstalate = [];
 
-        // 🛣️ DICTIONAR GEOMETRIC POLIGONAL FIX (Urmează perfect curbele de pe asfalt din București)
+        // 🛣️ Baza geometrică fixă optimizată pentru potrivire parțială text (fără diacritice, litere mici)
         const bazeGeometriceStrazi = {
-            "strada popa nan": [[44.43402, 26.12175], [44.43472, 26.12211], [44.43573, 26.12255], [44.43695, 26.12311], [44.43851, 26.12384], [44.44105, 26.12502]],
-            "strada traian": [[44.42851, 26.11623], [44.43045, 26.11681], [44.43265, 26.11742], [44.43460, 26.11802], [44.43641, 26.11855], [44.43872, 26.11921], [44.44111, 26.11985], [44.44315, 26.12042], [44.44685, 26.12140]],
-            "strada tepes voda": [[44.43475, 26.11925], [44.43521, 26.12140], [44.43555, 26.12302], [44.43615, 26.12570]],
-            "calea calarasilor": [[44.43231, 26.10825], [44.43258, 26.11120], [44.43292, 26.11545], [44.43341, 26.12141], [44.43410, 26.12750], [44.43465, 26.13110]],
-            "strada labirint": [[44.43085, 26.11692], [44.43101, 26.11895], [44.43120, 26.12110]],
-            "strada matei basarab": [[44.43212, 26.11051], [44.43242, 26.11410], [44.43271, 26.11745], [44.43315, 26.12190], [44.43345, 26.12520]],
-            "strada constantin kiritescu": [[44.47452, 26.11281], [44.47515, 26.11320], [44.47581, 26.11365]],
-            "intrare kiritescu": [[44.47501, 26.11302], [44.47532, 26.11331]],
-            "strada mantuleasa": [[44.43551, 26.11322], [44.43685, 26.11270], [44.43852, 26.11211]],
-            "strada parfumului": [[44.43182, 26.11451], [44.43255, 26.11512], [44.43322, 26.11581]],
-            "intrare parfumului": [[44.43221, 26.11501], [44.43252, 26.11532]],
-            "strada anton pann": [[44.43051, 26.10981], [44.43152, 26.11251]],
-            "strada udriste": [[44.43121, 26.10751], [44.43322, 26.10621]],
-            "strada cauzasi": [[44.42821, 26.11051], [44.42952, 26.11151]],
-            "strada romulus": [[44.43051, 26.11351], [44.43282, 26.11261], [44.43491, 26.11181], [44.43652, 26.11122]],
-            "strada remus": [[44.43021, 26.11221], [44.43122, 26.11181], [44.43222, 26.11151]],
-            "strada logofat tautu": [[44.41951, 26.11551], [44.41822, 26.12351]],
-            "strada lucian blaga": [[44.42551, 26.12321], [44.42752, 26.12241], [44.42982, 26.12155]],
-            "strada theodor sperantia": [[44.42821, 26.13221], [44.43012, 26.13851], [44.43252, 26.14551]],
-            "strada turturelelor": [[44.42752, 26.12251], [44.42512, 26.12361], [44.42322, 26.12451]],
-            "strada bradului": [[44.42622, 26.12151], [44.42542, 26.12291], [44.42482, 26.12422]],
-            "intrare bradului": [[44.42551, 26.12251], [44.42582, 26.12282]],
-            "strada foisorului": [[44.42151, 26.12421], [44.41912, 26.12611], [44.41652, 26.12851]],
-            "intrare foisorului": [[44.41921, 26.12551], [44.41952, 26.12582]],
-            "calea vitan": [[44.42155, 26.12481], [44.41652, 26.12751], [44.41122, 26.13111], [44.40622, 26.13551]],
-            "strada ziduri mosi": [[44.45121, 26.12721], [44.45552, 26.12981]],
-            "strada valeriu braniste": [[44.42251, 26.12421], [44.42382, 26.12681]],
-            "strada maxim gorki": [[44.46321, 26.09151], [44.46552, 26.09321]],
-            "strada alexandru moruzi": [[44.41851, 26.12821], [44.41682, 26.13251]],
-            "aleea alexandru moruzi": [[44.41751, 26.12951], [44.41622, 26.13151]],
-            "strada hristos botezatorul": [[44.43751, 26.10421], [44.43922, 26.10351]],
-            "strada sfanta vineri": [[44.43181, 26.10451], [44.42922, 26.10681]],
-            "strada lipscani": [[44.43251, 26.09651], [44.43122, 26.10451]],
-            "strada halelor": [[44.42881, 26.10021], [44.42822, 26.10351]],
-            "bulevardul bratianu": [[44.43451, 26.10221], [44.42852, 26.10121]],
-            "strada dristorului": [[44.42782, 26.13451], [44.42352, 26.13681], [44.41822, 26.13951]],
-            "strada baba novac": [[44.42252, 26.13881], [44.42192, 26.14621], [44.42122, 26.15551]],
-            "strada muresana": [[44.42151, 26.14121], [44.42022, 26.14351]],
-            "strada minis": [[44.43651, 26.16521], [44.43822, 26.16781]],
-            "strada scoala de inot": [[44.41251, 26.11151], [44.41322, 26.11281]],
-            "strada plugarilor": [[44.41451, 26.11321], [44.41582, 26.11581]],
-            "strada sirenelor": [[44.42351, 26.07621], [44.42212, 26.08451]],
-            "strada popa radu": [[44.43721, 26.12151], [44.43852, 26.12421]],
-            "intrare popa radu": [[44.43781, 26.12251], [44.43812, 26.12282]],
-            "strada ceaus radu": [[44.43021, 26.10651], [44.43082, 26.10821]],
-            "strada negru voda": [[44.43051, 26.10321], [44.42922, 26.10451]],
-            "strada iuliu barasch": [[44.43151, 26.10551], [44.43022, 26.10681]],
-            "strada olteni": [[44.42981, 26.10521], [44.42852, 26.10851]],
-            "intrare olteni": [[44.42921, 26.10651], [44.42952, 26.10682]],
-            "strada banul udrea": [[44.41921, 26.12521], [44.42152, 26.12851]],
-            "strada ion minulescu": [[44.41752, 26.12121], [44.41492, 26.12451], [44.41151, 26.12855]],
-            "strada octavian": [[44.42421, 26.11851], [44.42552, 26.12121]],
-            "strada gaspar gorjan": [[44.41821, 26.12351], [44.41952, 26.12481]],
-            "intrare gaspar gorjan": [[44.41881, 26.12401], [44.41912, 26.12431]],
-            "bulevardul decebal": [[44.43152, 26.13125], [44.43185, 26.13650], [44.43222, 26.14251]],
-            "bulevardul unirii": [[44.42721, 26.09355], [44.42710, 26.10220], [44.42681, 26.11550], [44.42582, 26.12310], [44.42512, 26.12852]],
-            "bulevardul corneliu coposu": [[44.43121, 26.10421], [44.42952, 26.11181]],
-            "bulevardul octavian goga": [[44.42521, 26.11421], [44.42312, 26.12651]],
-            "bulevardul mircea voda": [[44.42981, 26.10921], [44.42122, 26.11351]],
-            "bulevardul burebista": [[44.42451, 26.12721], [44.42322, 26.13451]],
-            "strada visinilor": [[44.43202, 26.11005], [44.43225, 26.11145], [44.43251, 26.11215]],
-            "strada zefirului": [[44.43281, 26.11051], [44.43312, 26.11182], [44.43332, 26.11291]]
+            "popa nan": [[44.43402, 26.12175], [44.43472, 26.12211], [44.43573, 26.12255], [44.43695, 26.12311], [44.43851, 26.12384], [44.44105, 26.12502]],
+            "traian": [[44.42851, 26.11623], [44.43045, 26.11681], [44.43265, 26.11742], [44.43460, 26.11802], [44.43641, 26.11855], [44.43872, 26.11921], [44.44111, 26.11985], [44.44315, 26.12042], [44.44685, 26.12140]],
+            "tepes voda": [[44.43475, 26.11925], [44.43521, 26.12140], [44.43555, 26.12302], [44.43615, 26.12570]],
+            "calasilor": [[44.43231, 26.10825], [44.43258, 26.11120], [44.43292, 26.11545], [44.43341, 26.12141], [44.43410, 26.12750], [44.43465, 26.13110]],
+            "labirint": [[44.43085, 26.11692], [44.43101, 26.11895], [44.43120, 26.12110]],
+            "matei basarab": [[44.43212, 26.11051], [44.43242, 26.11410], [44.43271, 26.11745], [44.43315, 26.12190], [44.43345, 26.12520]],
+            "kiritescu": [[44.47452, 26.11281], [44.47515, 26.11320], [44.47581, 26.11365]],
+            "mantuleasa": [[44.43551, 26.11322], [44.43685, 26.11270], [44.43852, 26.11211]],
+            "parfumului": [[44.43182, 26.11451], [44.43255, 26.11512], [44.43322, 26.11581]],
+            "anton pann": [[44.43051, 26.10981], [44.43152, 26.11251]],
+            "udriste": [[44.43121, 26.10751], [44.43322, 26.10621]],
+            "cauzasi": [[44.42821, 26.11051], [44.42952, 26.11151]],
+            "romulus": [[44.43051, 26.11351], [44.43282, 26.11261], [44.43491, 26.11181], [44.43652, 26.11122]],
+            "remus": [[44.43021, 26.11221], [44.43122, 26.11181], [44.43222, 26.11151]],
+            "logofat tautu": [[44.41951, 26.11551], [44.41822, 26.12351]],
+            "lucian blaga": [[44.42551, 26.12321], [44.42752, 26.12241], [44.42982, 26.12155]],
+            "theodor sperantia": [[44.42821, 26.13221], [44.43012, 26.13851], [44.43252, 26.14551]],
+            "turturelelor": [[44.42752, 26.12251], [44.42512, 26.12361], [44.42322, 26.12451]],
+            "bradului": [[44.42622, 26.12151], [44.42542, 26.12291], [44.42482, 26.12422]],
+            "foisorului": [[44.42151, 26.12421], [44.41912, 26.12611], [44.41652, 26.12851]],
+            "vitan": [[44.42155, 26.12481], [44.41652, 26.12751], [44.41122, 26.13111], [44.40622, 26.13551]],
+            "ziduri mosi": [[44.45121, 26.12721], [44.45552, 26.12981]],
+            "valeriu braniste": [[44.42251, 26.12421], [44.42382, 26.12681]],
+            "maxim gorki": [[44.46321, 26.09151], [44.46552, 26.09321]],
+            "alexandru moruzi": [[44.41851, 26.12821], [44.41682, 26.13251]],
+            "hristos botezatorul": [[44.43751, 26.10421], [44.43922, 26.10351]],
+            "sfanta vineri": [[44.43181, 26.10451], [44.42922, 26.10681]],
+            "lipscani": [[44.43251, 26.09651], [44.43122, 26.10451]],
+            "halelor": [[44.42881, 26.10021], [44.42822, 26.10351]],
+            "bratianu": [[44.43451, 26.10221], [44.42852, 26.10121]],
+            "dristorului": [[44.42782, 26.13451], [44.42352, 26.13681], [44.41822, 26.13951]],
+            "baba novac": [[44.42252, 26.13881], [44.42192, 26.14621], [44.42122, 26.15551]],
+            "muresana": [[44.42151, 26.14121], [44.42022, 26.14351]],
+            "minis": [[44.43651, 26.16521], [44.43822, 26.16781]],
+            "scoala de inot": [[44.41251, 26.11151], [44.41322, 26.11281]],
+            "plugarilor": [[44.41451, 26.11321], [44.41582, 26.11581]],
+            "sirenelor": [[44.42351, 26.07621], [44.42212, 26.08451]],
+            "popa radu": [[44.43721, 26.12151], [44.43852, 26.12421]],
+            "ceaus radu": [[44.43021, 26.10651], [44.43082, 26.10821]],
+            "negru voda": [[44.43051, 26.10321], [44.42922, 26.10451]],
+            "iuliu barasch": [[44.43151, 26.10551], [44.43022, 26.10681]],
+            "olteni": [[44.42981, 26.10521], [44.42852, 26.10851]],
+            "banul udrea": [[44.41921, 26.12521], [44.42152, 26.12851]],
+            "ion minulescu": [[44.41752, 26.12121], [44.41492, 26.12451], [44.41151, 26.12855]],
+            "octavian": [[44.42421, 26.11851], [44.42552, 26.12121]],
+            "gaspar gorjan": [[44.41821, 26.12351], [44.41952, 26.12481]],
+            "decebal": [[44.43152, 26.13125], [44.43185, 26.13650], [44.43222, 26.14251]],
+            "unirii": [[44.42721, 26.09355], [44.42710, 26.10220], [44.42681, 26.11550], [44.42582, 26.12310], [44.42512, 26.12852]],
+            "corneliu coposu": [[44.43121, 26.10421], [44.42952, 26.11181]],
+            "octavian goga": [[44.42521, 26.11421], [44.42312, 26.12651]],
+            "mircea voda": [[44.42981, 26.10921], [44.42122, 26.11351]],
+            "burebista": [[44.42451, 26.12721], [44.42322, 26.13451]],
+            "visinilor": [[44.43202, 26.11005], [44.43225, 26.11145], [44.43251, 26.11215]],
+            "zefirului": [[44.43281, 26.11051], [44.43312, 26.11182], [44.43332, 26.11291]]
         };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            harta = L.map('map').setView([44.4335, 26.1195], 14); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harta);
+            incarcaDateDirect();
+        });
 
         function deschideCazuriSecurizat() {
             let introducere = prompt("Introduceți parola pentru a vizualiza cazurile speciale:");
@@ -199,7 +197,6 @@
 
             let antetRaw = randuri[0].split(",");
             
-            // Gasire indici flexibili pentru coloane
             let idxEchipa = antetRaw.findIndex(el => /echipa/i.test(el));
             let idxStrada = antetRaw.findIndex(el => /strada|alege/i.test(el)); 
 
@@ -228,6 +225,7 @@
 
                 if (!strada || strada.toLowerCase().includes("alege o strada") || strada === "-") continue;
 
+                // Curățăm denumirea brută introdusă pentru a o afișa frumos în listă
                 let numeStradaCurat = strada.split(',')[0].trim();
                 if(numeStradaCurat) {
                     straziUniceSet.add(numeStradaCurat);
@@ -284,31 +282,34 @@
             });
         }
 
-        // ⚡ REPARAT DEFINITIV: Desenează liniile roșii instant folosind baza internă de date
+        // ⚡ NOUA LOGICĂ DE SARCINĂ PARTIALĂ (Filtrare inteligentă text brut din Google Sheets)
         function deseneazaTraseeInstanteFaraInternet() {
-            // Ștergem marcajele vechi de tip linie ca să nu se suprapună
             vectorLiniiInstalate.forEach(linie => harta.removeLayer(linie));
             vectorLiniiInstalate = [];
 
-            straziUniceSet.forEach(strada => {
-                // Curățare nume pentru căutarea sigură în dicționar (Ex: "Strada Vișinilor" devine "strada visinilor")
-                let cheieCautare = strada.toLowerCase()
-                                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Scoate diacriticele pentru potrivire sigură
-                                        .trim();
-                
-                if (bazeGeometriceStrazi[cheieCautare]) {
-                    let punctePoligonaleReale = bazeGeometriceStrazi[cheieCautare];
-                    
-                    let linieRosie = L.polyline(punctePoligonaleReale, {
-                        color: '#dc2626',   // Roșu aprins pentru vizibilitate maximă la soare
-                        weight: 6,          // Grosime optimă pentru străzi
-                        opacity: 0.45,      // Transparență perfectă (se vede numele străzii dedesubt)
-                        lineJoin: 'round',
-                        lineCap: 'round'
-                    }).addTo(harta);
+            straziUniceSet.forEach(stradaInregistrata => {
+                // Scoaterea diacriticelor și transformarea în litere mici pentru textul din Sheets
+                let textBrutCurat = stradaInregistrata.toLowerCase()
+                                                     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                                                     .trim();
 
-                    linieRosie.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:green;font-weight:bold;">Traseu realizat cu succes!</span>`);
-                    vectorLiniiInstalate.push(linieRosie);
+                // Căutăm dacă oricare dintre cheile noastre din dicționar se regăsește în textul din Sheets
+                for (let cheieDictionar in bazeGeometriceStrazi) {
+                    if (textBrutCurat.includes(cheieDictionar)) {
+                        let punctePoligonaleReale = bazeGeometriceStrazi[cheieDictionar];
+                        
+                        let linieRosie = L.polyline(punctePoligonaleReale, {
+                            color: '#dc2626',   // Roșu intens
+                            weight: 6,          // Grosime perfectă
+                            opacity: 0.5,       // Semi-transparent ca să se vadă numele străzii dedesubt
+                            lineJoin: 'round',
+                            lineCap: 'round'
+                        }).addTo(harta);
+
+                        linieRosie.bindPopup(`<b>🛣️ ${stradaInregistrata}</b><br><span style="color:green;font-weight:bold;">Traseu corelat din Sheets!</span>`);
+                        vectorLiniiInstalate.push(linieRosie);
+                        break; // Am găsit potrivirea pentru această stradă, trecem la următoarea
+                    }
                 }
             });
         }

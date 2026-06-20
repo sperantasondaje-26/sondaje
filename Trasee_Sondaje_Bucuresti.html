@@ -97,44 +97,68 @@
         let straziUniceSet = new Set();
         let straturiLiniiIncarcate = {};
 
-        // 🌟 DICȚIONAR GEOGRAFIC INTELIGENT (Separă exact Strada de Intrare)
+        // 🌟 TRASEE POLIGONALE PRECISE (Urmează exact curbele străzilor din zona Labirint)
         const coordonateStrăziFixe = {
-            "stradacostantinkirițescu": [[44.4315, 26.1141], [44.4308, 26.1143]],
-            "stradaconstantinkirițescu": [[44.4315, 26.1141], [44.4308, 26.1143]],
-            "stradaconstantinkiritescu": [[44.4315, 26.1141], [44.4308, 26.1143]],
-            
-            "intrarekirițescu": [[44.4312, 26.1142], [44.4313, 26.1145]],
-            "intrarekiritescu": [[44.4312, 26.1142], [44.4313, 26.1145]],
-            
-            "stradapopasoare": [[44.4338, 26.1132], [44.4326, 26.1168], [44.4316, 26.1198]],
-            "stradatraian": [[44.4365, 26.1158], [44.4312, 26.1167], [44.4255, 26.1182]],
-            "stradaștefanmihăileanu": [[44.4342, 26.1152], [44.4318, 26.1158]],
-            "stradastefanmihaileanu": [[44.4342, 26.1152], [44.4318, 26.1158]],
-            "stradațepeșvodă": [[44.4352, 26.1142], [44.4345, 26.1185]],
-            "stradatepesvoda": [[44.4352, 26.1142], [44.4345, 26.1185]],
-            "stradavișinilor": [[44.4328, 26.1148], [44.4315, 26.1152]],
-            "stradavisinilor": [[44.4328, 26.1148], [44.4315, 26.1152]]
+            "stradapopasoare": [
+                [44.43423, 26.11218], [44.43384, 26.11330], [44.43329, 26.11475], 
+                [44.43285, 26.11599], [44.43257, 26.11680], [44.43209, 26.11822], [44.43161, 26.11977]
+            ],
+            "stradatraian": [
+                [44.43673, 26.11579], [44.43493, 26.11603], [44.43309, 26.11626], 
+                [44.43118, 26.11654], [44.42850, 26.11693], [44.42550, 26.11736]
+            ],
+            "stradaștefanmihăileanu": [
+                [44.43455, 26.11516], [44.43312, 26.11537], [44.43181, 26.11558]
+            ],
+            "stradastefanmihaileanu": [
+                [44.43455, 26.11516], [44.43312, 26.11537], [44.43181, 26.11558]
+            ],
+            "stradațepeșvodă": [
+                [44.43542, 26.11388], [44.43509, 26.11497], [44.43475, 26.11626], 
+                [44.43449, 26.11728], [44.43423, 26.11855]
+            ],
+            "stradatepesvoda": [
+                [44.43542, 26.11388], [44.43509, 26.11497], [44.43475, 26.11626], 
+                [44.43449, 26.11728], [44.43423, 26.11855]
+            ],
+            "stradavișinilor": [
+                [44.43329, 26.11475], [44.43236, 26.11491], [44.43147, 26.11506]
+            ],
+            "stradavisinilor": [
+                [44.43329, 26.11475], [44.43236, 26.11491], [44.43147, 26.11506]
+            ],
+            "stradaconstantinkirițescu": [
+                [44.43154, 26.11406], [44.43118, 26.11413], [44.43085, 26.11421]
+            ],
+            "stradaconstantinkiritescu": [
+                [44.43154, 26.11406], [44.43118, 26.11413], [44.43085, 26.11421]
+            ],
+            "intrarekirițescu": [
+                [44.43118, 26.11413], [44.43122, 26.11462]
+            ],
+            "intrarekiritescu": [
+                [44.43118, 26.11413], [44.43122, 26.11462]
+            ]
         };
 
         document.addEventListener("DOMContentLoaded", function() {
-            // Inițializăm harta fix pe coordonatele Labirint 116 trimise de tine
-            harta = L.map('map').setView([44.431281, 26.117218], 15); 
+            // Inițializăm harta centrată perfect pe intersecția indicată de tine
+            harta = L.map('map').setView([44.43085, 26.11905], 15); 
             
-            // Adresă URL standard extrem de stabilă pentru OpenStreetMap (Rezolvă problema hărții albe)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
+                maxZoom: 19
             }).addTo(harta);
 
-            // Adăugăm triunghiul roșu pe poziția precisă de la numărul 116
+            // Plasăm triunghiul roșu fix în punctul verde indicat de tine în poză
             adaugaMarcajLabirint();
             
-            incarcaDateDirect();
+            setTimeout(incarcaDateDirect, 400);
         });
 
         function adaugaMarcajLabirint() {
-            const lat = 44.431281;
-            const lon = 26.117218;
+            // Coordonatele precise ale punctului verde din poza ta (Labirint cu Matei Basarab)
+            const lat = 44.43085;
+            const lon = 26.11905;
             const d = 0.00025; 
 
             const puncteTriunghi = [
@@ -146,11 +170,11 @@
             let triunghiRosu = L.polygon(puncteTriunghi, {
                 color: 'red',
                 fillColor: '#f03',
-                fillOpacity: 0.85,
+                fillOpacity: 0.9,
                 weight: 3
             }).addTo(harta);
 
-            triunghiRosu.bindPopup("<b>⚠️ Punct Fix: Strada Labirint 116</b>");
+            triunghiRosu.bindPopup("<b>⚠️ Punct Solicitat: Str. Labirint / Matei Basarab</b>");
         }
 
         function deschideCazuriSecurizat() {
@@ -180,7 +204,7 @@
                     proceseazaCsvExcel(text);
                 })
                 .catch(err => {
-                    console.error("Eroare la preluarea datelor Google Sheets:", err);
+                    console.error(err);
                 });
         }
 
@@ -264,26 +288,25 @@
             });
         }
 
-        // SISTEM NOU: Potrivește exact textul (ex: "Intrare Kirițescu" devine "intrarekirițescu", păstrând diferența față de "stradaconstantinkirițescu")
         function deseneazaToateTraseelePoligonaleReale() {
             straziUniceSet.forEach(strada => {
                 if (straturiLiniiIncarcate[strada]) return;
 
-                // Doar eliminăm spațiile și transformăm în litere mici, păstrând cuvintele "strada" sau "intrare" ca să le diferențiem
                 let cheieCautat = strada.toLowerCase().replace(/\s+/g, '').trim();
 
                 if (coordonateStrăziFixe[cheieCautat]) {
                     let puncteTraseu = coordonateStrăziFixe[cheieCautat];
 
+                    // Desenăm linia curbă exact pe drum
                     let linieAlbastra = L.polyline(puncteTraseu, {
-                        color: '#007bff', 
+                        color: '#0056b3', 
                         weight: 6, 
-                        opacity: 0.7, 
+                        opacity: 0.75, 
                         lineJoin: 'round', 
                         lineCap: 'round'
                     }).addTo(harta);
 
-                    linieAlbastra.bindPopup(`<b>🛣️ ${strada}</b>`);
+                    linieAlbastra.bindPopup(`<b>Animație: ${strada}</b>`);
                     straturiLiniiIncarcate[strada] = [linieAlbastra];
                 }
             });

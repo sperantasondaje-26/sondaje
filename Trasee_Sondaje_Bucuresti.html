@@ -3,204 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hartă Sondaje - Zona Labirint</title>
-    <!-- Leaflet CSS -->
+    <title>Harta Trasee București</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        #map {
-            height: 100vh;
-            width: 100%;
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f6f9; }
+        #map { height: 100vh; width: 100vw; z-index: 1; }
+        
+        .grup-butoane {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 1000;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 95%; max-width: 600px;
         }
-        body { margin: 0; padding: 0; font-family: sans-serif; }
-        #loading-status {
-            position: absolute;
-            top: 10px;
-            left: 50px;
-            z-index: 1000;
-            background: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            font-size: 12px;
-            font-weight: bold;
+        .btn-meniu {
+            background-color: #28a745; color: white; padding: 10px 14px; border: none; border-radius: 20px;
+            font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center;
+            min-width: 110px; flex: 1;
         }
+        .btn-strazi { background-color: #007bff; }
+        .btn-inapoi { background-color: #343a40; }
+
+        /* Butonul nou de întoarcere la hartă din interiorul ecranelor */
+        .btn-interfata-inapoi {
+            background-color: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 5px; 
+            font-weight: bold; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;
+        }
+
+        .container-ecran {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: white; z-index: 1050; display: none; flex-direction: column; box-sizing: border-box;
+        }
+        .antet-fereastra { padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; display: flex; justify-content: space-between; align-items: center; }
+        .antet-fereastra h2 { margin: 0; font-size: 16px; color: #333; }
+        .zona-scroll { flex: 1; overflow-y: auto; padding: 12px; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid #dee2e6; padding: 10px 8px; text-align: left; vertical-align: top; }
+        th { background-color: #343a40; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        
+        .lista-strazi { list-style-type: none; padding: 0; margin: 0; }
+        .lista-strazi li { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; color: #222; display: flex; align-items: center; gap: 8px; }
+        .lista-strazi li::before { content: "🛣️"; }
+        
+        .incarcare { text-align: center; padding: 30px; font-style: italic; color: #666; }
     </style>
 </head>
 <body>
 
-    <div id="loading-status">Se încarcă și se colorează străzile...</div>
+    <div class="grup-butoane">
+        <button class="btn-meniu" onclick="deschideCazuriSecurizat()">📋 Cazuri Speciale</button>
+        <button class="btn-meniu btn-strazi" onclick="deschideFereastra('container-strazi')">🚶 Istoric Străzi & Interese</button>
+        <a href="index.html" class="btn-meniu btn-inapoi">🏠 Pagina Principală</a>
+    </div>
+
+    <div id="container-tabel" class="container-ecran">
+        <div class="antet-fereastra">
+            <h2>📋 Cazuri Speciale Semnalate pe Teren</h2>
+            <button class="btn-interfata-inapoi" onclick="inchideToate()">⬅️ Înapoi la Hartă</button>
+        </div>
+        <div class="zona-scroll">
+            <table id="tabel-date">
+                <thead>
+                    <tr>
+                        <th>Echipă</th>
+                        <th>Adresă Caz</th>
+                        <th>Interese / Nevoi</th>
+                        <th>Observații</th>
+                    </tr>
+                </thead>
+                <tbody id="corp-tabel">
+                    <tr><td colspan="4" class="incarcare">Se încarcă datele...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="container-strazi" class="container-ecran">
+        <div class="antet-fereastra">
+            <h2>🚶 Listă Străzi Parcurse & Interese Operator</h2>
+            <button class="btn-interfata-inapoi" onclick="inchideToate()">⬅️ Înapoi la Hartă</button>
+        </div>
+        <div class="zona-scroll">
+            <ul id="lista-strazi-parcurse" class="lista-strazi">
+                <li class="incarcare">Se generează lista străzilor...</li>
+            </ul>
+        </div>
+    </div>
+
     <div id="map"></div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // COORDONATE CORECTATE PENTRU STRADA LABIRINT NR. 116
-        const latCentru = 44.43125;
-        const lngCentru = 26.11895;
+        const idTabelGoogle = '1O_XyQKzPOYiYGx7RPgJ-s6wl88c-YCmmUDGCf3RkOuQ'; 
+        const urlCsv = `https://docs.google.com/spreadsheets/d/${idTabelGoogle}/export?format=csv&gid=206187394`;
+        const parolaCorecta = 'titughejan@2026';
 
-        // Inițializare hartă
-        const map = L.map('map').setView([latCentru, lngCentru], 15);
+        let harta;
+        let straziUniceSet = new Set();
+        let straturiLiniiIncarcate = {};
 
-        // Adăugare strat OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        document.addEventListener("DOMContentLoaded", function() {
+            harta = L.map('map').setView([44.4335, 26.1195], 14); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harta);
+            incarcaDateDirect();
+        });
 
-        // Desenare TRIUNGHI ROȘU exact la nr. 116
-        const d = 0.0002; // dimensiune vizuală
-        const puncteTriunghi = [
-            [latCentru + d, lngCentru], 
-            [latCentru - d, lngCentru - d], 
-            [latCentru - d, lngCentru + d]
-        ];
-        L.polygon(puncteTriunghi, {
-            color: 'red',
-            fillColor: '#f03',
-            fillOpacity: 0.8,
-            weight: 3
-        }).addTo(map).bindPopup("<b>Punct de Pornire:</b> Str. Labirint 116");
-
-        // Cerc perimetru de 2.5 km
-        L.circle([latCentru, lngCentru], {
-            color: 'blue',
-            fillColor: '#30f',
-            fillOpacity: 0.03,
-            radius: 2500
-        }).addTo(map);
-
-        // BAZA TA DE DATE CU STRĂZI (DIACRITICE)
-        const listaStrazi = [
-            "Aleea Alexandru Moruzi, București, Romania",
-            "Bulevardul Brătianu, București, Romania",
-            "Bulevardul Burebista, București, Romania",
-            "Bulevardul Corneliu Coposu, București, Romania",
-            "Bulevardul Decebal, București, Romania",
-            "Bulevardul Mircea Vodă, București, Romania",
-            "Bulevardul Octavian Goga, București, Romania",
-            "Bulevardul Unirii, București, Romania",
-            "Calea Călărașilor, București, Romania",
-            "Calea Dudești, București, Romania",
-            "Calea Moșilor, București, Romania",
-            "Calea Văcărești, București, Romania",
-            "Calea Vitan, București, Romania",
-            "Intrare Bradului, București, Romania",
-            "Intrare Foișorului, București, Romania",
-            "Intrare Gașpar Gorjan, București, Romania",
-            "Intrare Kirițescu, București, Romania",
-            "Intrare Olteni, București, Romania",
-            "Intrare Parfumului, București, Romania",
-            "Intrare Popa Radu, București, Romania",
-            "Piața Alba Iulia, București, Romania",
-            "Șoseaua Mihai Bravu, București, Romania",
-            "Strada Alexandru Moruzi, București, Romania",
-            "Strada Anton Pann, București, Romania",
-            "Strada Baba Novac, București, Romania",
-            "Strada Banul Udrea, București, Romania",
-            "Strada Bradului, București, Romania",
-            "Strada Cauzași, București, Romania",
-            "Strada Ceauș Radu, București, Romania",
-            "Strada Constantin Kirițescu, București, Romania",
-            "Strada Delea Nouă, București, Romania",
-            "Strada Delea Veche, București, Romania",
-            "Strada Dristorului, București, Romania",
-            "Strada Foișorului, București, Romania",
-            "Strada Gașpar Gorjan, București, Romania",
-            "Strada Halelor, București, Romania",
-            "Strada Hristos Botezătorul, București, Romania",
-            "Strada Inocențiu Micu Klein, București, Romania",
-            "Strada Ion Minulescu, București, Romania",
-            "Strada Iuliu Barasch, București, Romania",
-            "Strada Justiției, București, Romania",
-            "Strada Labirint, București, Romania",
-            "Strada Lipscani, București, Romania",
-            "Strada Logofăt Tăutu, București, Romania",
-            "Strada Lucian Blaga, București, Romania",
-            "Strada Mântuleasa, București, Romania",
-            "Strada Matei Basarab, București, Romania",
-            "Strada Maxim Gorki, București, Romania",
-            "Strada Miniș, București, Romania",
-            "Strada Mureșana, București, Romania",
-            "Strada Negru Vodă, București, Romania",
-            "Strada Nerva Traian, București, Romania",
-            "Strada Octavian, București, Romania",
-            "Strada Olteni, București, Romania",
-            "Strada Parfumului, București, Romania",
-            "Strada Plugarilor, București, Romania",
-            "Strada Popa Nan, București, Romania",
-            "Strada Popa Radu, București, Romania",
-            "Strada Popa Soare, București, Romania",
-            "Strada Principatele Unite, București, Romania",
-            "Strada Remus, București, Romania",
-            "Strada Romulus, București, Romania",
-            "Strada Școala de Înot, București, Romania",
-            "Strada Sfinții Apostoli, București, Romania",
-            "Strada Sfânta Vineri, București, Romania",
-            "Strada Sirenelor, București, Romania",
-            "Strada Ștefan Mihăileanu, București, Romania",
-            "Strada Teodor Speranția, București, Romania",
-            "Strada Țepeș Vodă, București, Romania",
-            "Strada Traian, București, Romania",
-            "Strada Turturelelor, București, Romania",
-            "Strada Udriște, București, Romania",
-            "Strada Valeriu Braniște, București, Romania",
-            "Strada Vișinilor, București, Romania",
-            "Strada Vozilor, București, Romania",
-            "Strada Ziduri Moși, București, Romania"
-        ];
-
-        // FUNCȚIE DE GEOLOCALIZARE ȘI COLORARE (Rulează controlat pentru a nu bloca serverul)
-        let indexCurent = 0;
-
-        function coloreazaUrmatoareaStrada() {
-            if (indexCurent >= listaStrazi.length) {
-                document.getElementById('loading-status').innerHTML = "Toate străzile au fost mapate!";
-                setTimeout(() => document.getElementById('loading-status').style.display = 'none', 3000);
-                return;
+        function deschideCazuriSecurizat() {
+            let introducere = prompt("Introduceți parola pentru a vizualiza cazurile speciale:");
+            if (introducere === parolaCorecta) {
+                deschideFereastra('container-tabel');
+            } else if (introducere !== null) {
+                alert("Parolă incorectă! Accesul a fost refuzat.");
             }
+        }
 
-            let numeStrada = listaStrazi[indexCurent];
-            document.getElementById('loading-status').innerHTML = `Se colorează (${indexCurent + 1}/${listaStrazi.length}): ${numeStrada.split(',')[0]}`;
+        function deschideFereastra(id) {
+            inchideToate();
+            document.getElementById(id).style.display = 'flex';
+        }
+        
+        // Închide ecranele suprapuse și te aduce înapoi la harta din fundal
+        function inchideToate() {
+            document.getElementById('container-tabel').style.display = 'none';
+            document.getElementById('container-strazi').style.display = 'none';
+            // Forțăm Leaflet să își recalculeze dimensiunile hărții când revenim la ea
+            if (harta) {
+                harta.invalidateSize();
+            }
+        }
 
-            // Căutare coordonate geometrice prin API-ul OpenStreetMap
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&q=${encodeURIComponent(numeStrada)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        let element = data[0];
-                        // Dacă OpenStreetMap returnează linia/poligonul străzii, o desenăm colorată
-                        if (element.geojson && (element.geojson.type === "LineString" || element.geojson.type === "MultiLineString")) {
-                            L.geoJSON(element.geojson, {
-                                style: {
-                                    color: '#e67e22', // Culoare portocalie pentru trasee
-                                    weight: 5,
-                                    opacity: 0.85
-                                }
-                            }).addTo(map).bindPopup(`<b>${numeStrada.split(',')[0]}</b>`);
-                        } else {
-                            // Dacă găsește doar un punct (marker), punem un cerc mic colorat pe stradă
-                            L.circle([parseFloat(element.lat), parseFloat(element.lon)], {
-                                color: '#e67e22',
-                                fillColor: '#e67e22',
-                                fillOpacity: 0.8,
-                                radius: 25
-                            }).addTo(map).bindPopup(`<b>${numeStrada.split(',')[0]}</b>`);
-                        }
-                    }
-                    
-                    indexCurent++;
-                    // Pauză de 1 secundă între străzi ca să nu fim blocați de serverul de hărți
-                    setTimeout(coloreazaUrmatoareaStrada, 1000); 
+        function incarcaDateDirect() {
+            fetch(urlCsv + "&t=" + new Date().getTime())
+                .then(response => response.text())
+                .then(text => {
+                    proceseazaCsvExcel(text);
                 })
-                .catch(error => {
-                    console.log("Eroare la strada: " + numeStrada, error);
-                    indexCurent++;
-                    setTimeout(coloreazaUrmatoareaStrada, 1000);
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare la citirea datelor.</td></tr>`;
                 });
         }
 
-        // Pornim colorarea automată după ce se încarcă harta
-        setTimeout(coloreazaUrmatoareaStrada, 2000);
+        function proceseazaCsvExcel(text) {
+            let randuri = text.split(/\r?\n/);
+            if(randuri.length === 0) return;
 
-    </script>
-</body>
-</html>
+            let antet = randuri[0].split(",").map(h => h.replace(/\s+/g, ' ').trim().toLowerCase());
+            
+            let idxEchipa = antet.findIndex(el => el.includes("echipa"));
+            let idxStrada = antet.findIndex(el => el.includes("strada"));
+
+            let indiciCazuri = [];
+            for (let c = 1; c <= 4; c++) {
+                indiciCazuri.push({
+                    idxAddr: antet.findIndex(el => el.includes("nr") && el.includes("adresa") && el.includes(c.toString())),
+                    idxNevoi: antet.findIndex(el => el.includes("descriere") && el.

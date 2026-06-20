@@ -28,11 +28,20 @@
         }
 
         .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
             margin-bottom: 25px;
         }
 
+        .logo-sda {
+            max-width: 80px;
+            height: auto;
+        }
+
         .logo-speranta {
-            max-width: 180px;
+            max-width: 160px;
             height: auto;
         }
 
@@ -93,9 +102,13 @@
 
     <div class="container-principal">
         
-        <!-- Zona pentru Logo Speranța TV -->
+        <!-- Zona pentru Logouri (SDA și Speranța TV) deasupra butoanelor -->
         <div class="logo-container">
-            <img src="https://www.sperantatv.ro/wp-content/uploads/2018/10/logo-speranta-tv.png" alt="Speranța TV Logo" class="logo-speranta" onerror="this.src='https://via.placeholder.com/180x60?text=Speranta+TV'">
+            <!-- Sigla oficială mondială SDA (Adventistă) -->
+            <img src="https://images.adventist.org/style-guide/identity/adventist-symbol__stacked__gold.png" alt="SDA Logo" class="logo-sda" onerror="this.src='https://via.placeholder.com/80?text=SDA'">
+            
+            <!-- Sigla Speranța TV -->
+            <img src="https://www.sperantatv.ro/wp-content/uploads/2018/10/logo-speranta-tv.png" alt="Speranța TV Logo" class="logo-speranta" onerror="this.src='https://via.placeholder.com/160x50?text=Speranta+TV'">
         </div>
 
         <h1>Monitorizare Echipa de Teren</h1>
@@ -112,7 +125,7 @@
                 </div>
             </a>
 
-            <!-- Butonul 2: Formularul tău Google Forms actualizat -->
+            <!-- Butonul 2: Formularul tău Google Forms -->
             <a href="https://forms.gle/9mC6GM3ermhBLhr37" target="_blank" class="btn-meniu-principal color-form">
                 <div>
                     📝 2. Completează Formularul

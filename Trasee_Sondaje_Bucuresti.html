@@ -103,7 +103,7 @@
             harta = L.map('map').setView([44.4315, 26.1195], 15); 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harta);
             
-            // 🔺 ADAUGARE TRIUNGHI ROȘU PERMANENT LA LABIRINT 116
+            // 🔺 Triunghiul roșu permanent la Labirint 116
             const iconTriunghiRosu = L.divIcon({
                 html: '<svg width="30" height="30" viewBox="0 0 24 24"><polygon points="12,2 22,22 2,22" fill="#dc2626" stroke="#ffffff" stroke-width="2"/></svg>',
                 className: 'custom-triunghi',
@@ -111,7 +111,7 @@
                 iconAnchor: [15, 15]
             });
             L.marker([44.4308, 26.1185], {icon: iconTriunghiRosu}).addTo(harta)
-             .bindPopup("<b>🔺 Punct Fix: Labirint 116</b><br>Locație permanentă stabilită.");
+             .bindPopup("<b>🔺 Punct Fix: Labirint 116</b>");
 
             incarcaDateDirect();
         });
@@ -233,13 +233,11 @@
             straziUniceSet.forEach(strada => {
                 if (straturiLiniiIncarcate[strada]) return;
 
-                let doarNumele = strada.replace(/strada|bulevardul|calea|intrare|aleea/i, '').trim();
-
-                // 🎯 REPARARE MAXIMĂ: Adăugarea ancorării "$" forțează serverul să returneze doar strada exactă, ignorând derivatele false
+                // 🎯 INTEROGARE EXACTĂ: Căutăm exact stringul complet primit din foaia ta (ex: "Strada Traian")
                 let queryOverpass = `[out:json][timeout:25];
                     area["name"="București"]->.searchArea;
                     (
-                      way["name"~"${doarNumele}$", i](area.searchArea);
+                      way["name"="${strada}"](area.searchArea);
                     );
                     out body; >; out skel qt;`;
 
@@ -270,14 +268,14 @@
 
                                 if (puncteTraseuReal.length > 0) {
                                     let liniePoligonala = L.polyline(puncteTraseuReal, {
-                                        color: '#0056b3',    // Albastru intens curat
+                                        color: '#0056b3',    // Albastru curat
                                         weight: 6,           
                                         opacity: 0.6,       
                                         lineJoin: 'round',
                                         lineCap: 'round'
                                     }).addTo(harta);
 
-                                    liniePoligonala.bindPopup(`<b>🛣️ ${strada}</b><br><span style="color:blue;font-weight:bold;">Traseu corect parcurs!</span>`);
+                                    liniePoligonala.bindPopup(`<b>🛣️ ${strada}</b>`);
                                     liniiStradaGrup.push(liniePoligonala);
                                 }
                             }

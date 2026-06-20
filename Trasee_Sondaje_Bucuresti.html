@@ -97,17 +97,16 @@
         let straziUniceSet = new Set();
         let straturiLiniiIncarcate = {};
 
+        // 1. Încărcăm ÎNTÂI harta curată ca să apară instantaneu pe ecran
         document.addEventListener("DOMContentLoaded", function() {
-            // Zona Labirint centrală
             harta = L.map('map').setView([44.4312, 26.1172], 15); 
             
-            // LINK SECURIZAT CORECTAT (Fără subdomenii instabile care dădeau ecran alb)
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
             }).addTo(harta);
             
-            incarcaDateDirect();
+            // 2. Abia după ce harta e sus, aducem datele din Google Sheets și colorăm străzile
+            setTimeout(incarcaDateDirect, 500);
         });
 
         function deschideCazuriSecurizat() {
@@ -138,7 +137,6 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    document.getElementById('corp-tabel').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Eroare la citirea datelor.</td></tr>`;
                 });
         }
 
@@ -256,3 +254,23 @@
                                 });
 
                                 if (puncteTraseuReal.length > 0) {
+                                    let liniePoligonalatransport = L.polyline(puncteTraseuReal, {
+                                        color: '#0284c7', weight: 6, opacity: 0.5, lineJoin: 'round', lineCap: 'round'
+                                    }).addTo(harta);
+
+                                    liniePoligonalatransport.bindPopup(`<b>🛣️ ${strada}</b>`);
+                                    liniiStradaGrup.push(liniePoligonalatransport);
+                                }
+                            }
+                        });
+
+                        if(liniiStradaGrup.length > 0) {
+                            straturiLiniiIncarcate[strada] = liniiStradaGrup;
+                        }
+                    })
+                    .catch(e => console.error(e));
+            });
+        }
+    </script>
+</body>
+</html>

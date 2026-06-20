@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Monitorizare Teren - Labirint</title>
+    <title>Sondaj de Opinie - Hope Media</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             background-color: #f4f6f9;
             display: flex;
             flex-direction: column;
@@ -19,49 +19,70 @@
 
         .container-principal {
             width: 90%;
-            max-width: 450px;
+            max-width: 460px;
             background-color: white;
-            padding: 30px 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 35px 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             text-align: center;
+            box-sizing: border-box;
         }
 
-        .logo-container {
+        /* Container Logouri */
+        .header-identitate {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
             margin-bottom: 25px;
         }
 
-        .logo-sda {
-            max-width: 80px;
+        .sigla-sda {
+            max-width: 55px;
             height: auto;
+            opacity: 0.85;
+            margin-bottom: 15px;
         }
 
-        .logo-speranta {
-            max-width: 160px;
+        .sigla-hope-media {
+            max-width: 130px;
             height: auto;
+            margin-bottom: 12px;
         }
 
-        h1 {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 5px;
+        /* Texte Antet Oficiale */
+        .titru-sondaj {
+            font-size: 24px;
+            font-weight: 800;
+            color: #21409a; /* Albastru oficial din imagine */
+            letter-spacing: 1px;
+            margin: 0 0 4px 0;
+            text-transform: uppercase;
         }
 
-        p.subtitlu {
-            font-size: 14px;
-            color: #666;
-            margin-top: 0;
-            margin-bottom: 30px;
+        .studiu-subtitlu {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0 0 6px 0;
         }
 
+        .trust-info {
+            font-size: 12px;
+            color: #666666;
+            letter-spacing: 0.5px;
+            margin: 0 0 30px 0;
+            text-transform: uppercase;
+            font-weight: bold;
+            border-bottom: 2px solid #21409a;
+            padding-bottom: 12px;
+            display: block;
+        }
+
+        /* Meniu Butoane */
         .grup-butoane-meniu {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 14px;
             width: 100%;
         }
 
@@ -69,32 +90,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
             padding: 16px;
             font-size: 15px;
             font-weight: bold;
             color: white;
             text-decoration: none;
-            border-radius: 25px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(33, 64, 154, 0.15);
+            transition: background-color 0.2s, transform 0.1s;
         }
 
         .btn-meniu-principal:active {
             transform: scale(0.98);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .color-harta { background-color: #007bff; }
+        .color-harta { background-color: #21409a; } /* Corelat cu brandul */
         .color-form { background-color: #28a745; }
-        .color-istoric { background-color: #6c757d; }
+        .color-istoric { background-color: #4b5563; }
 
         .subtext-buton {
             display: block;
             font-size: 11px;
             font-weight: normal;
             opacity: 0.9;
-            margin-top: 2px;
+            margin-top: 3px;
         }
     </style>
 </head>
@@ -102,22 +121,23 @@
 
     <div class="container-principal">
         
-        <!-- Zona pentru Logouri (SDA și Speranța TV) deasupra butoanelor -->
-        <div class="logo-container">
-            <!-- Sigla oficială mondială SDA (Adventistă) -->
-            <img src="https://images.adventist.org/style-guide/identity/adventist-symbol__stacked__gold.png" alt="SDA Logo" class="logo-sda" onerror="this.src='https://via.placeholder.com/80?text=SDA'">
+        <div class="header-identitate">
+            <!-- Sigla superioară discretă SDA -->
+            <img src="https://images.adventist.org/style-guide/identity/adventist-symbol__stacked__gold.png" alt="SDA Logo" class="sigla-sda" onerror="this.style.display='none'">
             
-            <!-- Sigla Speranța TV -->
-            <img src="https://www.sperantatv.ro/wp-content/uploads/2018/10/logo-speranta-tv.png" alt="Speranța TV Logo" class="logo-speranta" onerror="this.src='https://via.placeholder.com/160x50?text=Speranta+TV'">
+            <!-- Sigla Hope Media încărcată din imaginea ta brută -->
+            <img src="https://raw.githubusercontent.com/sperantasondaje-26/sondaje/main/Untitled-design-3.png" alt="Hope Media Logo" class="sigla-hope-media" onerror="this.src='https://via.placeholder.com/130x100?text=Hope+Media'">
+            
+            <!-- Blocul de text modern-oficial solicitat -->
+            <h1 class="titru-sondaj">Sondaj de Opinie</h1>
+            <h2 class="studiu-subtitlu">Studiul „Religia și mass-media”</h2>
+            <span class="trust-info">• Trustul Media Speranța •</span>
         </div>
 
-        <h1>Monitorizare Echipa de Teren</h1>
-        <p class="subtitlu">Zona Labirint - București</p>
-
-        <!-- Meniul Principal cu Butoane Mari -->
+        <!-- Meniul Principal de Operare -->
         <div class="grup-butoane-meniu">
             
-            <!-- Butonul 1: Deschide Google My Maps direct -->
+            <!-- Butonul 1: Harta My Maps -->
             <a href="https://www.google.com/maps/d/u/0/edit?mid=1lvHSAzdEui6ff_n5BbqjUPNUNaYjXss&usp=sharing" target="_blank" class="btn-meniu-principal color-harta">
                 <div>
                     🗺️ 1. Vezi Harta Traseelor
@@ -125,15 +145,15 @@
                 </div>
             </a>
 
-            <!-- Butonul 2: Formularul tău Google Forms -->
+            <!-- Butonul 2: Chestionarul tău -->
             <a href="https://forms.gle/9mC6GM3ermhBLhr37" target="_blank" class="btn-meniu-principal color-form">
                 <div>
                     📝 2. Completează Formularul
-                    <span class="subtext-buton">Introducere străzi și cazuri noi</span>
+                    <span class="subtext-buton">Introducere răspunsuri în timp real</span>
                 </div>
             </a>
 
-            <!-- Butonul 3: Trimite direct la fișierul tău de istoric din GitHub -->
+            <!-- Butonul 3: Tabelul Istoric de Străzi și Numere parcurse -->
             <a href="Trasee_Sondaje_Bucuresti.html" class="btn-meniu-principal color-istoric">
                 <div>
                     📋 3. Istoric Străzi & Cazuri

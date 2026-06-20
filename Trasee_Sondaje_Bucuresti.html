@@ -98,37 +98,17 @@
         let straturiLiniiIncarcate = {};
 
         document.addEventListener("DOMContentLoaded", function() {
-            // Inițializăm harta pe coordonatele de la nr. 116
-            harta = L.map('map').setView([44.431281, 26.117218], 15); 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harta);
+            // Zona Labirint centrală
+            harta = L.map('map').setView([44.4312, 26.1172], 15); 
             
-            // Adăugăm triunghiul roșu corectat
-            adaugaMarcajLabirint();
+            // LINK SECURIZAT CORECTAT (Fără subdomenii instabile care dădeau ecran alb)
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(harta);
             
             incarcaDateDirect();
         });
-
-        function adaugaMarcajLabirint() {
-            const lat = 44.431281;
-            const lon = 26.117218;
-            const dimensiune = 0.0003; 
-
-            const puncteTriunghi = [
-                [lat + dimensiune, lon], 
-                [lat - dimensiune, lon - dimensiune], 
-                [lat - dimensiune, lon + dimensiune] 
-            ];
-
-            let triunghiRosu = L.polygon(puncteTriunghi, {
-                color: 'red',
-                fillColor: '#f03',
-                fillOpacity: 0.8,
-                weight: 3
-            }).addTo(harta);
-
-            // LINIE CORECTATĂ: adăugat .addTo(harta) la sfârșit ca să nu mai blocheze aplicația
-            triunghiRosu.bindPopup("<b>⚠️ Punct Fix: Strada Labirint 116</b>").addTo(harta);
-        }
 
         function deschideCazuriSecurizat() {
             let introducere = prompt("Introduceți parola pentru a vizualiza cazurile speciale:");
@@ -269,4 +249,10 @@
 
                         let liniiStradaGrup = [];
                         data.elements.forEach(el => {
-                            if (el.type
+                            if (el.type === 'way' && el.nodes) {
+                                let puncteTraseuReal = [];
+                                el.nodes.forEach(nodeId => {
+                                    if (noduri[nodeId]) puncteTraseuReal.push(noduri[nodeId]);
+                                });
+
+                                if (puncteTraseuReal.length > 0) {

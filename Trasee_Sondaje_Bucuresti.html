@@ -11,51 +11,64 @@
             height: 100vh;
             width: 100%;
         }
-        body { margin: 0; padding: 0; }
+        body { margin: 0; padding: 0; font-family: sans-serif; }
+        #loading-status {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            z-index: 1000;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            font-size: 12px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
+    <div id="loading-status">Se încarcă și se colorează străzile...</div>
     <div id="map"></div>
 
-    <!-- Leaflet JS (Aici s-a corectat din href în src și s-a adăugat link-ul complet) -->
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // 1. COORDONATE REALE BISERICA LABIRINT 116
-        const latCentru = 44.43088;
-        const lngCentru = 26.11584;
+        // COORDONATE CORECTATE PENTRU STRADA LABIRINT NR. 116
+        const latCentru = 44.43125;
+        const lngCentru = 26.11895;
 
-        // Inițializare hartă centrată pe Labirint 116
-        const map = L.map('map').setView([latCentru, lngCentru], 14);
+        // Inițializare hartă
+        const map = L.map('map').setView([latCentru, lngCentru], 15);
 
         // Adăugare strat OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Marcaj pentru Biserica Labirint (Triunghiul de control)
-        const dimensiuneTriunghi = 0.0003; 
+        // Desenare TRIUNGHI ROȘU exact la nr. 116
+        const d = 0.0002; // dimensiune vizuală
         const puncteTriunghi = [
-            [latCentru + dimensiuneTriunghi, lngCentru], 
-            [latCentru - dimensiuneTriunghi, lngCentru - dimensiuneTriunghi], 
-            [latCentru - dimensiuneTriunghi, lngCentru + dimensiuneTriunghi]
+            [latCentru + d, lngCentru], 
+            [latCentru - d, lngCentru - d], 
+            [latCentru - d, lngCentru + d]
         ];
-
-        const triunghiCentru = L.polygon(puncteTriunghi, {
+        L.polygon(puncteTriunghi, {
             color: 'red',
             fillColor: '#f03',
-            fillOpacity: 0.7
-        }).addTo(map).bindPopup("<b>Punct Central:</b> Biserica Labirint 116");
+            fillOpacity: 0.8,
+            weight: 3
+        }).addTo(map).bindPopup("<b>Punct de Pornire:</b> Str. Labirint 116");
 
-        // Cerc de perimetru pe o rază de 2.5 km în jurul punctului corectat
-        const cercPerimetru = L.circle([latCentru, lngCentru], {
+        // Cerc perimetru de 2.5 km
+        L.circle([latCentru, lngCentru], {
             color: 'blue',
             fillColor: '#30f',
-            fillOpacity: 0.05,
-            radius: 2500 // 2.5 km
+            fillOpacity: 0.03,
+            radius: 2500
         }).addTo(map);
 
-        // 2. BAZA DE DATE ACTUALIZATĂ (ALFABETICĂ, CU DIACRITICE)
+        // BAZA TA DE DATE CU STRĂZI (DIACRITICE)
         const listaStrazi = [
             "Aleea Alexandru Moruzi, București, Romania",
             "Bulevardul Brătianu, București, Romania",
@@ -135,7 +148,59 @@
             "Strada Ziduri Moși, București, Romania"
         ];
 
-        console.log("Total străzi încărcate:", listaStrazi.length);
+        // FUNCȚIE DE GEOLOCALIZARE ȘI COLORARE (Rulează controlat pentru a nu bloca serverul)
+        let indexCurent = 0;
+
+        function coloreazaUrmatoareaStrada() {
+            if (indexCurent >= listaStrazi.length) {
+                document.getElementById('loading-status').innerHTML = "Toate străzile au fost mapate!";
+                setTimeout(() => document.getElementById('loading-status').style.display = 'none', 3000);
+                return;
+            }
+
+            let numeStrada = listaStrazi[indexCurent];
+            document.getElementById('loading-status').innerHTML = `Se colorează (${indexCurent + 1}/${listaStrazi.length}): ${numeStrada.split(',')[0]}`;
+
+            // Căutare coordonate geometrice prin API-ul OpenStreetMap
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&q=${encodeURIComponent(numeStrada)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        let element = data[0];
+                        // Dacă OpenStreetMap returnează linia/poligonul străzii, o desenăm colorată
+                        if (element.geojson && (element.geojson.type === "LineString" || element.geojson.type === "MultiLineString")) {
+                            L.geoJSON(element.geojson, {
+                                style: {
+                                    color: '#e67e22', // Culoare portocalie pentru trasee
+                                    weight: 5,
+                                    opacity: 0.85
+                                }
+                            }).addTo(map).bindPopup(`<b>${numeStrada.split(',')[0]}</b>`);
+                        } else {
+                            // Dacă găsește doar un punct (marker), punem un cerc mic colorat pe stradă
+                            L.circle([parseFloat(element.lat), parseFloat(element.lon)], {
+                                color: '#e67e22',
+                                fillColor: '#e67e22',
+                                fillOpacity: 0.8,
+                                radius: 25
+                            }).addTo(map).bindPopup(`<b>${numeStrada.split(',')[0]}</b>`);
+                        }
+                    }
+                    
+                    indexCurent++;
+                    // Pauză de 1 secundă între străzi ca să nu fim blocați de serverul de hărți
+                    setTimeout(coloreazaUrmatoareaStrada, 1000); 
+                })
+                .catch(error => {
+                    console.log("Eroare la strada: " + numeStrada, error);
+                    indexCurent++;
+                    setTimeout(coloreazaUrmatoareaStrada, 1000);
+                });
+        }
+
+        // Pornim colorarea automată după ce se încarcă harta
+        setTimeout(coloreazaUrmatoareaStrada, 2000);
+
     </script>
 </body>
 </html>

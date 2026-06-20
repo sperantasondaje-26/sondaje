@@ -18,23 +18,22 @@
 
     <div id="map"></div>
 
-    <!-- Leaflet JS -->
-    <script href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet JS (Aici s-a corectat din href în src și s-a adăugat link-ul complet) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // 1. COORDONATE CORECTATE BISERICA LABIRINT 116
+        // 1. COORDONATE REALE BISERICA LABIRINT 116
         const latCentru = 44.43088;
         const lngCentru = 26.11584;
 
         // Inițializare hartă centrată pe Labirint 116
-        const map = L.map('map').setView([latCentru, lngCentru], 15);
+        const map = L.map('map').setView([latCentru, lngCentru], 14);
 
         // Adăugare strat OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Marcaj pentru Biserica Labirint (Triunghiul de control repoziționat corect)
-        // Folosim un polygon cu 3 puncte strânse în jurul centrului real pentru a desena triunghiul perfect
+        // Marcaj pentru Biserica Labirint (Triunghiul de control)
         const dimensiuneTriunghi = 0.0003; 
         const puncteTriunghi = [
             [latCentru + dimensiuneTriunghi, lngCentru], 
@@ -45,7 +44,7 @@
         const triunghiCentru = L.polygon(puncteTriunghi, {
             color: 'red',
             fillColor: '#f03',
-            fillOpacity: 0.5
+            fillOpacity: 0.7
         }).addTo(map).bindPopup("<b>Punct Central:</b> Biserica Labirint 116");
 
         // Cerc de perimetru pe o rază de 2.5 km în jurul punctului corectat
@@ -55,7 +54,6 @@
             fillOpacity: 0.05,
             radius: 2500 // 2.5 km
         }).addTo(map);
-
 
         // 2. BAZA DE DATE ACTUALIZATĂ (ALFABETICĂ, CU DIACRITICE)
         const listaStrazi = [
@@ -137,7 +135,7 @@
             "Strada Ziduri Moși, București, Romania"
         ];
 
-        console.log("Baza de date cu străzi a fost încărcată cu succes. Total străzi:", listaStrazi.length);
+        console.log("Total străzi încărcate:", listaStrazi.length);
     </script>
 </body>
 </html>

@@ -97,59 +97,42 @@
         let straziUniceSet = new Set();
         let straturiLiniiIncarcate = {};
 
-        // BAZA DE DATE GEOGRAFICĂ INTERNĂ
+        // 🌟 DICȚIONAR GEOGRAFIC INTELIGENT (Separă exact Strada de Intrare)
         const coordonateStrăziFixe = {
-            "popa soare": [
-                [44.4338, 26.1132], [44.4326, 26.1168], [44.4316, 26.1198]
-            ],
-            "traian": [
-                [44.4365, 26.1158], [44.4312, 26.1167], [44.4255, 26.1182]
-            ],
-            "ștefan mihăileanu": [
-                [44.4342, 26.1152], [44.4318, 26.1158]
-            ],
-            "stefan mihaileanu": [
-                [44.4342, 26.1152], [44.4318, 26.1158]
-            ],
-            "țepeș vodă": [
-                [44.4352, 26.1142], [44.4345, 26.1185]
-            ],
-            "tepes voda": [
-                [44.4352, 26.1142], [44.4345, 26.1185]
-            ],
-            "vișinilor": [
-                [44.4328, 26.1148], [44.4315, 26.1152]
-            ],
-            "visinilor": [
-                [44.4328, 26.1148], [44.4315, 26.1152]
-            ],
-            "constantin kirițescu": [
-                [44.4315, 26.1141], [44.4308, 26.1143]
-            ],
-            "constantin kiritescu": [
-                [44.4315, 26.1141], [44.4308, 26.1143]
-            ],
-            "intrare kiritescu": [
-                [44.4312, 26.1142], [44.4313, 26.1145]
-            ]
+            "stradacostantinkirițescu": [[44.4315, 26.1141], [44.4308, 26.1143]],
+            "stradaconstantinkirițescu": [[44.4315, 26.1141], [44.4308, 26.1143]],
+            "stradaconstantinkiritescu": [[44.4315, 26.1141], [44.4308, 26.1143]],
+            
+            "intrarekirițescu": [[44.4312, 26.1142], [44.4313, 26.1145]],
+            "intrarekiritescu": [[44.4312, 26.1142], [44.4313, 26.1145]],
+            
+            "stradapopasoare": [[44.4338, 26.1132], [44.4326, 26.1168], [44.4316, 26.1198]],
+            "stradatraian": [[44.4365, 26.1158], [44.4312, 26.1167], [44.4255, 26.1182]],
+            "stradaștefanmihăileanu": [[44.4342, 26.1152], [44.4318, 26.1158]],
+            "stradastefanmihaileanu": [[44.4342, 26.1152], [44.4318, 26.1158]],
+            "stradațepeșvodă": [[44.4352, 26.1142], [44.4345, 26.1185]],
+            "stradatepesvoda": [[44.4352, 26.1142], [44.4345, 26.1185]],
+            "stradavișinilor": [[44.4328, 26.1148], [44.4315, 26.1152]],
+            "stradavisinilor": [[44.4328, 26.1148], [44.4315, 26.1152]]
         };
 
         document.addEventListener("DOMContentLoaded", function() {
-            // Inițializăm harta direct pe coordonatele trimise de tine (Labirint 116)
+            // Inițializăm harta fix pe coordonatele Labirint 116 trimise de tine
             harta = L.map('map').setView([44.431281, 26.117218], 15); 
             
+            // Adresă URL standard extrem de stabilă pentru OpenStreetMap (Rezolvă problema hărții albe)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
             }).addTo(harta);
 
-            // Desenăm triunghiul pe coordonatele GPS exacte
+            // Adăugăm triunghiul roșu pe poziția precisă de la numărul 116
             adaugaMarcajLabirint();
             
-            setTimeout(incarcaDateDirect, 500);
+            incarcaDateDirect();
         });
 
         function adaugaMarcajLabirint() {
-            // Coordonatele precise trimise de tine
             const lat = 44.431281;
             const lon = 26.117218;
             const d = 0.00025; 
@@ -197,7 +180,7 @@
                     proceseazaCsvExcel(text);
                 })
                 .catch(err => {
-                    console.error(err);
+                    console.error("Eroare la preluarea datelor Google Sheets:", err);
                 });
         }
 
@@ -248,4 +231,63 @@
                                 <td style="font-weight:bold; color:#0056b3;">${echipa}</td>
                                 <td>${numeStradaCurat}, Nr. ${numarAdresa}</td>
                                 <td>${textNevoi || "-"}</td>
-                                <td style="background-color: #fffdf0; font-style: italic;">
+                                <td style="background-color: #fffdf0; font-style: italic;">${textObs || "-"}</td>
+                            `;
+                            corpTabel.appendChild(rand);
+                        }
+                    }
+                });
+            }
+
+            if (!areCazuri) {
+                corpTabel.innerHTML = `<tr><td colspan="4" class="incarcare">Nu sunt cazuri speciale înregistrate.</td></tr>`;
+            }
+
+            popeazaListaStrazi();
+            deseneazaToateTraseelePoligonaleReale();
+        }
+
+        function popeazaListaStrazi() {
+            const containerLista = document.getElementById('lista-strazi-parcurse');
+            containerLista.innerHTML = "";
+
+            if (straziUniceSet.size === 0) {
+                containerLista.innerHTML = `<li class="incarcare">Nicio stradă nu a fost parcursă încă.</li>`;
+                return;
+            }
+
+            let straziSortate = Array.from(straziUniceSet).sort((a, b) => a.localeCompare(b));
+            straziSortate.forEach(strada => {
+                let li = document.createElement('li');
+                li.innerHTML = `<strong>${strada}</strong>`;
+                containerLista.appendChild(li);
+            });
+        }
+
+        // SISTEM NOU: Potrivește exact textul (ex: "Intrare Kirițescu" devine "intrarekirițescu", păstrând diferența față de "stradaconstantinkirițescu")
+        function deseneazaToateTraseelePoligonaleReale() {
+            straziUniceSet.forEach(strada => {
+                if (straturiLiniiIncarcate[strada]) return;
+
+                // Doar eliminăm spațiile și transformăm în litere mici, păstrând cuvintele "strada" sau "intrare" ca să le diferențiem
+                let cheieCautat = strada.toLowerCase().replace(/\s+/g, '').trim();
+
+                if (coordonateStrăziFixe[cheieCautat]) {
+                    let puncteTraseu = coordonateStrăziFixe[cheieCautat];
+
+                    let linieAlbastra = L.polyline(puncteTraseu, {
+                        color: '#007bff', 
+                        weight: 6, 
+                        opacity: 0.7, 
+                        lineJoin: 'round', 
+                        lineCap: 'round'
+                    }).addTo(harta);
+
+                    linieAlbastra.bindPopup(`<b>🛣️ ${strada}</b>`);
+                    straturiLiniiIncarcate[strada] = [linieAlbastra];
+                }
+            });
+        }
+    </script>
+</body>
+</html>
